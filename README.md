@@ -1,8 +1,7 @@
 # SA2CharacterSelectPlus
-This sonic adventure 2 mod adds in 4 new buttons in the character select menu for the chao garden, to easily access the 4 alternative characters for the chao garden - 7th July 2018
+This sonic adventure 2 mod adds in 4 new buttons in the character select menu for the chao garden, and a new menu for every stage to select 1 of 14 characters!
 
-Planned: editing the mission select menu to choose character before starting level, and making it possible to choose between all 14 characters (maybe 16, if i get super sonic and super shadow working)
+this mod uses Mainmemories SA2CharSelect mod code to fix loads of errors - https://github.com/MainMemory/SA2CharSel
 
-Download link to built version: http://www.mediafire.com/file/wizaj45bwuwe9ow/ChaoCharSelectPlus.zip/file
 
 big thanks to Exant and Mainmemory, who helped me out with making this mod
