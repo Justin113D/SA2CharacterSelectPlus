@@ -121,13 +121,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;CharacterSelectPlus_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\sa2-mod-loader\SA2ModLoader\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sa2-mod-loader\SA2ModLoader\include; ..\mod-loader-common\ModLoaderCommon</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies); ..\bin\ModLoaderCommon.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -158,12 +159,30 @@
   <ItemGroup>
     <ClCompile Include="CharacterSelectPlus.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClInclude Include="SA2CharSel.h">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\sa2-mod-loader\SA2ModLoader\include;..\mod-loader-common\ModLoaderCommon</AdditionalIncludeDirectories>
+    </ClInclude>
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\missiontex_am.pak" />
+    <None Include="..\Resources\missiontex_am2.pak" />
+    <None Include="..\Resources\missiontex_c0.pak" />
+    <None Include="..\Resources\missiontex_c02.pak" />
+    <None Include="..\Resources\missiontex_ch.pak" />
+    <None Include="..\Resources\missiontex_ch2.pak" />
+    <None Include="..\Resources\missiontex_dc.pak" />
+    <None Include="..\Resources\missiontex_dc2.pak" />
+    <None Include="..\Resources\missiontex_me.pak" />
+    <None Include="..\Resources\missiontex_me2.pak" />
+    <None Include="..\Resources\missiontex_ti.pak" />
+    <None Include="..\Resources\missiontex_ti2.pak" />
+    <None Include="..\Resources\stageMap.pak" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

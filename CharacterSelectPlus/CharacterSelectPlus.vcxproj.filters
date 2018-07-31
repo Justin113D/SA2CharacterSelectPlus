@@ -24,6 +24,9 @@
     <ClInclude Include="CharacterSelectPlus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SA2CharSel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -35,5 +38,46 @@
     <ClCompile Include="CharacterSelectPlus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\stageMap.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_am.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_am2.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_c0.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_c02.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_ch.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_ch2.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_dc.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_dc2.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_me.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_me2.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_ti.pak">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Resources\missiontex_ti2.pak">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
