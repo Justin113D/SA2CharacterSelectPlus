@@ -24,7 +24,13 @@
     <ClInclude Include="CharacterSelectPlus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SA2CharSel.h">
+    <ClInclude Include="Base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BossTitles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RankVoices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -36,6 +42,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CharacterSelectPlus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BossTitles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RankVoices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

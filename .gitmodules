@@ -4,9 +4,3 @@
 [submodule "mod-loader-common"]
 	path = mod-loader-common
 	url = https://github.com/sonicretro/mod-loader-common
-[submodule "CharacterSelectPlus/SA2CharSel"]
-	path = CharacterSelectPlus/SA2CharSel
-	url = https://github.com/MainMemory/SA2CharSel
-[submodule "SA2CharSel"]
-	path = SA2CharSel
-	url = https://github.com/MainMemory/SA2CharSel

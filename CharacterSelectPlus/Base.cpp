@@ -1,22 +1,19 @@
-// SA2CharSel.cpp : Defines the exported functions for the DLL application.
-// This code is made by MainMemory | https://github.com/MainMemory/SA2CharSel
-// it was optimized to cooperate with my CharacterSelectPlus mod
-
 #include "stdafx.h"
+#include "SA2ModLoader.h"
+#include "IniFile.hpp"
+#include "Base.h"
 #include <cstdio>
 #include <vector>
 #include <algorithm>
-#include "SA2ModLoader.h"
-#include "IniFile.hpp"
 
 using std::vector;
 using std::string;
 using std::unordered_map;
 using std::transform;
 
-DataArray(uint32_t, MenuPressedButtons, 0x1DEFB10, 4);
+#pragma region Cutscene stuff
 
-LevelCutscene *const stru_173A808 = (LevelCutscene*)0x173A808;
+LevelCutscene* const stru_173A808 = (LevelCutscene*)0x173A808;
 signed int __cdecl sub_458970()
 {
 	signed int v0; // ecx@3
@@ -27,15 +24,17 @@ signed int __cdecl sub_458970()
 	else
 		v0 = -1;
 	if (v0 >= Characters_Amy) return 0;
+	if (AltCostume[0]) return 0;
 	if (MainCharObj2[1] && MainCharObj2[1]->CharID2 >= Characters_Amy) return 0;
-	if ( *(char*)0x1DEB321 && *(char*)0x1DEB320)
+	if (MainCharObj2[1] && AltCostume[1]) return 0;
+	if (*(char*)0x1DEB321 && *(char*)0x1DEB320)
 	{
 		v1 = 0;
-		while ( stru_173A808[v1].Level != (signed __int16)CurrentLevel
-			|| stru_173A808[v1].Character )
+		while (stru_173A808[v1].Level != (signed __int16)CurrentLevel
+			|| stru_173A808[v1].Character != v0)
 		{
 			v1++;
-			if ( v1 >= 16 )
+			if (v1 >= 15)
 				return 0;
 		}
 		return 1;
@@ -44,113 +43,10 @@ signed int __cdecl sub_458970()
 		return 0;
 }
 
-bool __cdecl CheckEmeraldManager()
-{
-	if (MissionNum == 1 || MissionNum == 2)
-		return false;
-	if (*(int*)0x1AF014C)
-		return false;
-	switch ((short)CurrentLevel)
-	{
-	case LevelIDs_PumpkinHill:
-	case LevelIDs_AquaticMine:
-	case LevelIDs_SecurityHall:
-	case LevelIDs_WildCanyon:
-	case LevelIDs_DryLagoon:
-	case LevelIDs_DeathChamber:
-	case LevelIDs_EggQuarters:
-	case LevelIDs_MeteorHerd:
-	case LevelIDs_WildCanyon2P:
-	case LevelIDs_MadSpace:
-	case LevelIDs_DryLagoon2P:
-	case LevelIDs_PoolQuest:
-	case LevelIDs_PlanetQuest:
-	case LevelIDs_DeathChamber2P:
-		return true;
-	}
-	return false;
-}
+#pragma endregion
+#pragma region Somersault fixes
 
-static const void *const loc_73AAC2 = (void*)0x73AAC2;
-__declspec(naked) void LoadEmeraldManager_r()
-{
-	if (!CheckEmeraldManager())
-		__asm retn;
-	__asm
-	{
-		push	esi
-			push	edi
-			jmp loc_73AAC2
-	}
-}
-
-template <typename T1, typename T2> struct pair { T1 key; T2 value; };
-
-pair<short, short> SonicAnimReplacements[] = {
-	{ 211, 1 },
-	{ 212, 77 },
-	{ 215, 15 }
-};
-
-pair<short, short> OthersAnimReplacements[] = {
-	{ 76, 0 },
-	{ 77, 15 },
-	{ 185, 62 },
-	{ 186, 62 },
-	{ 187, 62 },
-	{ 189, 62 },
-	{ 190, 62 },
-	{ 192, 15 },
-	{ 193, 15 },
-	{ 194, 15 },
-	{ 195, 15 },
-	{ 196, 15 },
-	{ 197, 15 },
-	{ 198, 15 },
-	{ 211, 1 },
-	{ 212, 62 },
-	{ 215, 15 }
-};
-
-pair<short, short> KnucklesAnimReplacements[] = {
-	{ 190, 75 },
-	{ 192, 105 },
-	{ 193, 105 },
-	{ 194, 15 },
-	{ 195, 15 },
-	{ 196, 15 },
-	{ 197, 15 },
-	{ 198, 15 },
-	{ 211, 1 },
-	{ 212, 77 },
-	{ 215, 15 }
-};
-
-pair<short, short> MechAnimReplacements[] = {
-	{ 76, 0 },
-	{ 77, 15 },
-	{ 185, 75 },
-	{ 186, 75 },
-	{ 187, 75 },
-	{ 189, 75 },
-	{ 190, 75 },
-	{ 192, 15 },
-	{ 193, 15 },
-	{ 194, 15 },
-	{ 195, 15 },
-	{ 196, 15 },
-	{ 197, 15 },
-	{ 198, 15 },
-	{ 211, 1 },
-	{ 212, 77 },
-	{ 215, 15 }
-};
-
-#define altcostume 0x80u
-#define altcharacter 0x40
-#define charmask ~(altcostume|altcharacter)
-int defaultcharacters[Characters_Amy] = { Characters_Sonic, Characters_Shadow, Characters_Tails, Characters_Eggman, Characters_Knuckles, Characters_Rouge, Characters_MechTails, Characters_MechEggman };
-
+// Fix 1
 #define Texlist_SonEff 0xA08B94
 #define Texlist_ShadEff 0xA08D94
 #define Texlist_AmyEff 0xA08F94
@@ -160,35 +56,37 @@ __declspec(naked) void __cdecl sub_757810()
 {
 	__asm
 	{
-		mov     eax, [esp+4]
+		mov     eax, [esp + 4]
 		mov     eax, [eax]ObjectMaster.Data2
-			movsx   ecx, [eax].CharID
-			mov     edx, MainCharObj2
-			mov edx, [edx+ecx*4]
+		movsx   ecx, [eax].CharID
+		mov     edx, MainCharObj2
+		mov edx, [edx + ecx * 4]
 		mov ecx, 0xA0B3B8
-			mov dl, [edx].CharID2
-			cmp     dl, Characters_Sonic
-			jnz NotSonic
-			mov     dword ptr [ecx], Texlist_SonEff
-			jmp loc_75783C
+		mov dl, [edx].CharID2
+		cmp     dl, Characters_Sonic
+		jnz NotSonic
+		mov     dword ptr[ecx], Texlist_SonEff
+		jmp loc_75783C
 
-NotSonic:
+		NotSonic :
 		cmp     dl, Characters_Shadow
 			jnz NotShadow
-			mov     dword ptr [ecx], Texlist_ShadEff
+			mov     dword ptr[ecx], Texlist_ShadEff
 			jmp loc_75783C
 
-NotShadow:
+			NotShadow :
 		cmp     dl, Characters_Amy
 			jnz NotAmy
-			mov     dword ptr [ecx], Texlist_AmyEff
+			mov     dword ptr[ecx], Texlist_AmyEff
 			jmp loc_75783C
 
-NotAmy:
-		mov     dword ptr [ecx], Texlist_MetEff
+			NotAmy :
+		mov     dword ptr[ecx], Texlist_MetEff
 			jmp loc_75783C
 	}
 }
+
+// Fix 2
 
 const int loc_759A3C = 0x759A3C;
 __declspec(naked) void loc_759A18()
@@ -196,31 +94,35 @@ __declspec(naked) void loc_759A18()
 	__asm
 	{
 		movsx	eax, [eax].CharID2
-			mov	ecx, 0x2670544
-			mov ecx, [ecx]
+		mov	ecx, 0x2670544
+		mov ecx, [ecx]
 		cmp	eax, Characters_Sonic
-			jne	short NotSonic
-			mov	dword ptr [ecx+20h], Texlist_SonEff
-			jmp	loc_759A3C
+		jne	short NotSonic
+		mov	dword ptr[ecx + 20h], Texlist_SonEff
+		jmp	loc_759A3C
 
-NotSonic:
+		NotSonic :
 		cmp	eax, Characters_Shadow
 			jne	short NotShadow
-			mov	dword ptr [ecx+20h], Texlist_ShadEff
+			mov	dword ptr[ecx + 20h], Texlist_ShadEff
 			jmp	loc_759A3C
 
-NotShadow:
+			NotShadow :
 		cmp	eax, Characters_Amy
 			jne	short NotAmy
-			mov	dword ptr [ecx+20h], Texlist_AmyEff
+			mov	dword ptr[ecx + 20h], Texlist_AmyEff
 			jmp	loc_759A3C
 
-NotAmy:
-		mov	dword ptr [ecx+20h], Texlist_MetEff
+			NotAmy :
+		mov	dword ptr[ecx + 20h], Texlist_MetEff
 			jmp	loc_759A3C
 	}
 }
 
+#pragma endregion
+#pragma region Start Positions
+
+#pragma warning(disable : 4838)
 StartPosition KnucklesStart[] = {
 	{ LevelIDs_BasicTest },
 	{ LevelIDs_PumpkinHill, 0xD000u, 0xD000u, 0xD000u, { 199, -1361, -1035 }, { 188.63f, -1361, -1045 }, { 208.3f, -1361, -1021.5f } },
@@ -376,76 +278,77 @@ StartPosition TailsStart[] = {
 	{ LevelIDs_RadicalHighway, 0xC000u, 0xC000u, 0xC000u, { 0, -400, -910 }, { -40, -400, -910 }, { 40, -400, -910 } },
 	{ LevelIDs_Invalid }
 };
+#pragma warning(default : 4838)
 
-StartPosition *NSonicStartArray[] = { SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, KnucklesStart, RougeStart, SuperSonicStart, SuperShadowStart, TailsStart };
-StartPosition *NShadowStartArray[] = { ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, RougeStart, KnucklesStart, SuperShadowStart, SuperSonicStart, TailsStart };
-StartPosition *NMechTailsStartArray[] = { MechTailsStart, MechEggmanStart, SonicStart, ShadowStart, KnucklesStart, RougeStart, SuperSonicStart, SuperShadowStart, TailsStart };
-StartPosition *NMechEggmanStartArray[] = { MechEggmanStart, MechTailsStart, ShadowStart, SonicStart, RougeStart, KnucklesStart, SuperShadowStart, SuperSonicStart, TailsStart };
-StartPosition *NKnucklesStartArray[] = { KnucklesStart, RougeStart, SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, SuperSonicStart, SuperShadowStart, TailsStart };
-StartPosition *NRougeStartArray[] = { RougeStart, KnucklesStart, ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, SuperShadowStart, SuperSonicStart, TailsStart };
-StartPosition *NSuperSonicStartArray[] = { SuperSonicStart, SuperShadowStart, SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, KnucklesStart, RougeStart, TailsStart };
-StartPosition *NSuperShadowStartArray[] = { SuperShadowStart, SuperSonicStart, ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, RougeStart, KnucklesStart, TailsStart };
-StartPosition *NTailsStartArray[] = { TailsStart, SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, KnucklesStart, RougeStart, SuperSonicStart, SuperShadowStart };
-StartPosition *NEggmanStartArray[] = { TailsStart, ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, RougeStart, KnucklesStart, SuperShadowStart, SuperSonicStart };
+StartPosition* SonicStartList[] = { SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, KnucklesStart, RougeStart, SuperSonicStart, SuperShadowStart, TailsStart };
+StartPosition* ShadowStartList[] = { ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, RougeStart, KnucklesStart, SuperShadowStart, SuperSonicStart, TailsStart };
+StartPosition* MechTailsStartList[] = { MechTailsStart, MechEggmanStart, SonicStart, ShadowStart, KnucklesStart, RougeStart, SuperSonicStart, SuperShadowStart, TailsStart };
+StartPosition* MechEggmanStartList[] = { MechEggmanStart, MechTailsStart, ShadowStart, SonicStart, RougeStart, KnucklesStart, SuperShadowStart, SuperSonicStart, TailsStart };
+StartPosition* KnucklesStartList[] = { KnucklesStart, RougeStart, SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, SuperSonicStart, SuperShadowStart, TailsStart };
+StartPosition* RougeStartList[] = { RougeStart, KnucklesStart, ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, SuperShadowStart, SuperSonicStart, TailsStart };
+StartPosition* SuperSonicStartList[] = { SuperSonicStart, SuperShadowStart, SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, KnucklesStart, RougeStart, TailsStart };
+StartPosition* SuperShadowStartList[] = { SuperShadowStart, SuperSonicStart, ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, RougeStart, KnucklesStart, TailsStart };
+StartPosition* TailsStartList[] = { TailsStart, SonicStart, ShadowStart, MechTailsStart, MechEggmanStart, KnucklesStart, RougeStart, SuperSonicStart, SuperShadowStart };
+StartPosition* EggmanStartList[] = { TailsStart, ShadowStart, SonicStart, MechEggmanStart, MechTailsStart, RougeStart, KnucklesStart, SuperShadowStart, SuperSonicStart };
 
-int __cdecl LoadStartPosition_ri(int playerNum, NJS_VECTOR *position, Rotation *rotation)
+int __cdecl LoadStartPosition_ri(int playerNum, NJS_VECTOR* position, Rotation* rotation)
 {
-	ObjectMaster *v1; // eax@1
-	CharObj2Base *v4; // eax@7
-	StartPosition **list;
-	StartPosition *v5; // eax@9
+	ObjectMaster* v1; // eax@1
+	CharObj2Base* v4; // eax@7
+	StartPosition** list;
+	StartPosition* v5; // eax@9
 	int v6; // edx@25
-	NJS_VECTOR *v8; // edx@35
+	NJS_VECTOR* v8; // edx@35
 
 	v1 = MainCharacter[playerNum];
-	if ( position )
+	if (position)
 	{
 		position->z = 0.0;
 		position->y = 0.0;
 		position->x = 0.0;
 	}
-	if ( rotation )
+	if (rotation)
 	{
 		rotation->z = 0;
 		rotation->y = 0;
 		rotation->x = 0;
 	}
-	if ( v1 )
+	if (v1)
 	{
 		v4 = MainCharObj2[playerNum];
-		if ( v4 )
+		if (v4)
 		{
-			switch ( v4->CharID )
+			switch (v4->CharID)
 			{
 			case Characters_Sonic:
-				list = NSonicStartArray;
+				list = SonicStartList;
 				break;
 			case Characters_Shadow:
-				list = NShadowStartArray;
+				list = ShadowStartList;
 				break;
 			case Characters_Knuckles:
-				list = NKnucklesStartArray;
+				list = KnucklesStartList;
 				break;
 			case Characters_Rouge:
-				list = NRougeStartArray;
+				list = RougeStartList;
 				break;
 			case Characters_Tails:
-				list = NTailsStartArray;
+				list = TailsStartList;
 				break;
 			case Characters_Eggman:
-				list = NEggmanStartArray;
+				list = EggmanStartList;
 				break;
 			case Characters_MechEggman:
-				list = NMechEggmanStartArray;
+				list = MechEggmanStartList;
 				break;
 			case Characters_MechTails:
-				list = NMechTailsStartArray;
+				list = MechTailsStartList;
 				break;
 			case Characters_SuperSonic:
-				list = NSuperSonicStartArray;
+				list = SuperSonicStartList;
 				break;
 			case Characters_SuperShadow:
-				list = NSuperShadowStartArray;
+				list = SuperShadowStartList;
 				break;
 			default:
 				return 1;
@@ -453,27 +356,27 @@ int __cdecl LoadStartPosition_ri(int playerNum, NJS_VECTOR *position, Rotation *
 		}
 		else
 			return 1;
-		if ( TwoPlayerMode
+		if (TwoPlayerMode
 			|| (short)CurrentLevel == LevelIDs_SonicVsShadow1
 			|| (short)CurrentLevel == LevelIDs_SonicVsShadow2
 			|| (short)CurrentLevel == LevelIDs_TailsVsEggman1
 			|| (short)CurrentLevel == LevelIDs_TailsVsEggman2
-			|| (short)CurrentLevel == LevelIDs_KnucklesVsRouge )
+			|| (short)CurrentLevel == LevelIDs_KnucklesVsRouge)
 			v6 = (playerNum != 0) + 1;
 		else
 			v6 = 0;
-		for (int i = 0; i < (int)LengthOfArray(NSonicStartArray); i++)
+		for (int i = 0; i < (int)LengthOfArray(SonicStartList); i++)
 		{
 			v5 = list[i];
-			if ( v5 )
+			if (v5)
 			{
-				while ( v5->Level != LevelIDs_Invalid )
+				while (v5->Level != LevelIDs_Invalid)
 				{
-					if ( v5->Level == (short)CurrentLevel )
+					if (v5->Level == (short)CurrentLevel)
 					{
-						if ( rotation )
+						if (rotation)
 							rotation->y = *(&v5->Rotation1P + v6);
-						if ( position )
+						if (position)
 						{
 							v8 = &(&v5->Position1P)[v6];
 							position->x = v8->x;
@@ -495,81 +398,18 @@ __declspec(naked) void LoadStartPosition_r()
 {
 	__asm
 	{
-		mov eax, [esp+4]
+		mov eax, [esp + 4]
 		push eax
-			push edi
-			push ecx
-			call LoadStartPosition_ri
-			add esp, 12
-			retn
+		push edi
+		push ecx
+		call LoadStartPosition_ri
+		add esp, 12
+		retn
 	}
 }
 
-LevelEndPosition KnucklesEnd[] = {
-	{ LevelIDs_PumpkinHill, 0x8000u, 0xC000u, 0, { 530, -986, -770 }, { -13, 34.8f, 1275 } },
-	{ LevelIDs_AquaticMine, 0, 0, 0, { 0, 130, -365 }, { -600, 211, 443 } },
-	{ LevelIDs_WildCanyon, 0xC000u, 0xC000u, 0, { 705, 1010, -14 }, { 1700, 0, 121 } },
-	{ LevelIDs_DeathChamber, 0, 0xE000u, 0, { 100, 100, 180 }, { -805, -35, -805 } },
-	{ LevelIDs_MeteorHerd, 0, 0x5200, 0, { 10, 170, 140 }, { -438, 2752, -432 } },
-	{ LevelIDs_CannonsCoreK, 0xC000u, 0xFFFFu, 0, { 0, 660, -160 }, { 0, 580, 60 } },
-	{ LevelIDs_Invalid },
-};
-
-LevelEndPosition MechEggmanEnd[] = {
-	{ LevelIDs_IronGate, 0x8000u, 0xC000u, 0, { 1490, -270, -1025 }, { 3184, -233, -702 } },
-	{ LevelIDs_WeaponsBed, 0x4000, 0xFA00u, 0, { -4, -160, -40 }, { 1500, -220, -6008 } },
-	{ LevelIDs_SandOcean, 0x4000, 0x4A00, 0, { 0, 80, 0 }, { 659, 120, -4660 } },
-	{ LevelIDs_LostColony, 0x8000u, 0, 0, { 595, -518, -2350 }, { 2225, -308, -2400 } },
-	{ LevelIDs_CannonsCoreE, 0, 0xFFFFu, 0, { 80, -30, -1570 }, { 0, 20, -200 } },
-	{ LevelIDs_CosmicWall, 0x4000, 0xA000u, 0, { 6673, 4000, 11677 }, { 2753, 2583, -1045 } },
-	{ LevelIDs_Invalid },
-};
-
-LevelEndPosition MechTailsEnd[] = {
-	{ LevelIDs_PrisonLane, 0x8000u, 0x8000u, 0, { -350, 117, 410 }, { -3129, 790, -242 } },
-	{ LevelIDs_MissionStreet, 0x8000u, 0, 0, { 2200, 800, -3500 }, { 4065, 758, -4170 } },
-	{ LevelIDs_HiddenBase, 0, 0x4000, 0, { -2295, 110, -2845 }, { -3525, 920, -4960 } },
-	{ LevelIDs_EternalEngine, 0x4000, 0x4000, 0, { -2055, 936, -5825 }, { -652, 788, -4426 } },
-	{ LevelIDs_CannonsCoreT, 0, 0xFFFFu, 0, { -1050, 638, -1540 }, { 0, 670, 0 } },
-	{ LevelIDs_Invalid },
-};
-
-LevelEndPosition RougeEnd[] = {
-	{ LevelIDs_SecurityHall, 0, 0x4000, 0, { 100, -573, 490 }, { 0, 314.6f, 110 } },
-	{ LevelIDs_DryLagoon, 0x8000u, 0x7000, 0, { 191, 211, 1317 }, { 1728, 0, -382 } },
-	{ LevelIDs_EggQuarters, 0x8000u, 0x8000u, 0, { 100, 70, 1255 }, { -655, -20, 2680 } },
-	{ LevelIDs_CannonsCoreR, 0x4000, 0xFFFFu, 0, { 80, 135, 80 }, { 0, 480, 150 } },
-	{ LevelIDs_MadSpace, 0xEC00u, 0, 0, { 272.5f, 2358, -334.5f }, { -154, 3350, 481 } },
-	{ LevelIDs_Invalid },
-};
-
-LevelEndPosition ShadowEnd[] = {
-	{ LevelIDs_BasicTest, 0, 0, 0, { 0 }, { 0 } },
-	{ LevelIDs_RadicalHighway, 0xC000u, 0x8000u, 0, { -40, -400, -970 }, { -6330, -4500, -8830 } },
-	{ LevelIDs_WhiteJungle, 0xC000u, 0xB000u, 0, { 5040, -2220, -1550 }, { 13280, -3157, -7370 } },
-	{ LevelIDs_FinalChase, 0xC000u, 0xE000u, 0, { 3408, -6592, 16865 }, { -695, -6959.5f, 10275 } },
-	{ LevelIDs_SkyRail, 0x8000u, 0xA000u, 0, { -2411, -1792, 4260 }, { -3457, -1047, 3001 } },
-	{ LevelIDs_Invalid },
-};
-
-LevelEndPosition SonicEnd[] = {
-	{ LevelIDs_BasicTest },
-	{ LevelIDs_GreenForest, 0x8000u, 0x8000u, 0, { 5858, -1812, 7541 }, { 6890, -1610, 7542 } },
-	{ LevelIDs_MetalHarbor, 0, 0x4000, 0, { 2158, -160, -5294 }, { 1707, -170, -6583 } },
-	{ LevelIDs_CityEscape, 0xC000u, 0x4000, 0, { -1570, -6060, 8860 }, { 7700, -13145, 5570 } },
-	{ LevelIDs_CrazyGadget, 0xC000u, 0x8000u, 0, { -9710, -1045, -4005 }, { -8725, -537, -2905 } },
-	{ LevelIDs_PyramidCave, 0x4000, 0, 0, { -685, -4190, -19525 }, { -2170, -3970, -21870 } },
-	{ LevelIDs_FinalRush, 0, 0xC000u, 0, { 5776, -15687, 20080 }, { 4207, -16632, 24462 } },
-	{ LevelIDs_CannonsCoreS, 0x4000, 0x4000, 0, { 0, -480, -1550 }, { -510, -655, -4700 } },
-	{ LevelIDs_Invalid },
-};
-
-LevelEndPosition *NSonicEndArray[] = { SonicEnd, ShadowEnd, MechTailsEnd, MechEggmanEnd, KnucklesEnd, RougeEnd };
-LevelEndPosition *NShadowEndArray[] = { ShadowEnd, SonicEnd, MechEggmanEnd, MechTailsEnd, RougeEnd, KnucklesEnd };
-LevelEndPosition *NMechTailsEndArray[] = { MechTailsEnd, MechEggmanEnd, SonicEnd, ShadowEnd, KnucklesEnd, RougeEnd };
-LevelEndPosition *NMechEggmanEndArray[] = { MechEggmanEnd, MechTailsEnd, ShadowEnd, SonicEnd, RougeEnd, KnucklesEnd };
-LevelEndPosition *NKnucklesEndArray[] = { KnucklesEnd, RougeEnd, SonicEnd, ShadowEnd, MechTailsEnd, MechEggmanEnd };
-LevelEndPosition *NRougeEndArray[] = { RougeEnd, KnucklesEnd, ShadowEnd, SonicEnd, MechEggmanEnd, MechTailsEnd };
+#pragma endregion
+#pragma region Start2 Positions
 
 StartPosition KnucklesStart2[] = {
 	{ LevelIDs_BasicTest },
@@ -717,41 +557,112 @@ StartPosition SuperSonicStart2[] = {
 	{ LevelIDs_FinalHazard, 0, 0, 0, { 600, -400, 200 }, { 600, -400, 200 }, { 600, -400, 200 } },
 	{ LevelIDs_Invalid }
 };
+#pragma warning(default : 4838)
 
-StartPosition *NSonicStartArray2[] = { SonicStart2, ShadowStart2, MechTailsStart2, MechEggmanStart2, KnucklesStart2, RougeStart2, SuperSonicStart2, SuperShadowStart2 };
-StartPosition *NShadowStartArray2[] = { ShadowStart2, SonicStart2, MechEggmanStart2, MechTailsStart2, RougeStart2, KnucklesStart2, SuperShadowStart2, SuperSonicStart2 };
-StartPosition *NMechTailsStartArray2[] = { MechTailsStart2, MechEggmanStart2, SonicStart2, ShadowStart2, KnucklesStart2, RougeStart2, SuperSonicStart2, SuperShadowStart2 };
-StartPosition *NMechEggmanStartArray2[] = { MechEggmanStart2, MechTailsStart2, ShadowStart2, SonicStart2, RougeStart2, KnucklesStart2, SuperShadowStart2, SuperSonicStart2 };
-StartPosition *NKnucklesStartArray2[] = { KnucklesStart2, RougeStart2, SonicStart2, ShadowStart2, MechTailsStart2, MechEggmanStart2, SuperSonicStart2, SuperShadowStart2 };
-StartPosition *NRougeStartArray2[] = { RougeStart2, KnucklesStart2, ShadowStart2, SonicStart2, MechEggmanStart2, MechTailsStart2, SuperShadowStart2, SuperSonicStart2 };
-StartPosition *NSuperSonicStartArray2[] = { SuperSonicStart2, SuperShadowStart2, SonicStart2, ShadowStart2, MechTailsStart2, MechEggmanStart2, KnucklesStart2, RougeStart2 };
-StartPosition *NSuperShadowStartArray2[] = { SuperShadowStart2, SuperSonicStart2, MechEggmanStart2, MechTailsStart2, RougeStart2, KnucklesStart2, ShadowStart2, SonicStart2 };
+StartPosition* SonicStartList2[] = { SonicStart2, ShadowStart2, MechTailsStart2, MechEggmanStart2, KnucklesStart2, RougeStart2, SuperSonicStart2, SuperShadowStart2 };
+StartPosition* ShadowStartList2[] = { ShadowStart2, SonicStart2, MechEggmanStart2, MechTailsStart2, RougeStart2, KnucklesStart2, SuperShadowStart2, SuperSonicStart2 };
+StartPosition* MechTailsStartList2[] = { MechTailsStart2, MechEggmanStart2, SonicStart2, ShadowStart2, KnucklesStart2, RougeStart2, SuperSonicStart2, SuperShadowStart2 };
+StartPosition* MechEggmanStartList2[] = { MechEggmanStart2, MechTailsStart2, ShadowStart2, SonicStart2, RougeStart2, KnucklesStart2, SuperShadowStart2, SuperSonicStart2 };
+StartPosition* KnucklesStartList2[] = { KnucklesStart2, RougeStart2, SonicStart2, ShadowStart2, MechTailsStart2, MechEggmanStart2, SuperSonicStart2, SuperShadowStart2 };
+StartPosition* RougeStartList2[] = { RougeStart2, KnucklesStart2, ShadowStart2, SonicStart2, MechEggmanStart2, MechTailsStart2, SuperShadowStart2, SuperSonicStart2 };
+StartPosition* SuperSonicStartList2[] = { SuperSonicStart2, SuperShadowStart2, SonicStart2, ShadowStart2, MechTailsStart2, MechEggmanStart2, KnucklesStart2, RougeStart2 };
+StartPosition* SuperShadowStartList2[] = { SuperShadowStart2, SuperSonicStart2, MechEggmanStart2, MechTailsStart2, RougeStart2, KnucklesStart2, ShadowStart2, SonicStart2 };
 
-static const void *const sub_46DC70Ptr = (void*)0x46DC70;
-void sub_46DC70(int a1, NJS_VECTOR *a2, char a3)
+#pragma endregion
+#pragma region End Positions
+
+#pragma warning(disable : 4838)
+LevelEndPosition KnucklesEnd[] = {
+	{ LevelIDs_PumpkinHill, 0x8000u, 0xC000u, 0, { 530, -986, -770 }, { -13, 34.8f, 1275 } },
+	{ LevelIDs_AquaticMine, 0, 0, 0, { 0, 130, -365 }, { -600, 211, 443 } },
+	{ LevelIDs_WildCanyon, 0xC000u, 0xC000u, 0, { 705, 1010, -14 }, { 1700, 0, 121 } },
+	{ LevelIDs_DeathChamber, 0, 0xE000u, 0, { 100, 100, 180 }, { -805, -35, -805 } },
+	{ LevelIDs_MeteorHerd, 0, 0x5200, 0, { 10, 170, 140 }, { -438, 2752, -432 } },
+	{ LevelIDs_CannonsCoreK, 0xC000u, 0xFFFFu, 0, { 0, 660, -160 }, { 0, 580, 60 } },
+	{ LevelIDs_Invalid },
+};
+
+LevelEndPosition MechEggmanEnd[] = {
+	{ LevelIDs_IronGate, 0x8000u, 0xC000u, 0, { 1490, -270, -1025 }, { 3184, -233, -702 } },
+	{ LevelIDs_WeaponsBed, 0x4000, 0xFA00u, 0, { -4, -160, -40 }, { 1500, -220, -6008 } },
+	{ LevelIDs_SandOcean, 0x4000, 0x4A00, 0, { 0, 80, 0 }, { 659, 120, -4660 } },
+	{ LevelIDs_LostColony, 0x8000u, 0, 0, { 595, -518, -2350 }, { 2225, -308, -2400 } },
+	{ LevelIDs_CannonsCoreE, 0, 0xFFFFu, 0, { 80, -30, -1570 }, { 0, 20, -200 } },
+	{ LevelIDs_CosmicWall, 0x4000, 0xA000u, 0, { 6673, 4000, 11677 }, { 2753, 2583, -1045 } },
+	{ LevelIDs_Invalid },
+};
+
+LevelEndPosition MechTailsEnd[] = {
+	{ LevelIDs_PrisonLane, 0x8000u, 0x8000u, 0, { -350, 117, 410 }, { -3129, 790, -242 } },
+	{ LevelIDs_MissionStreet, 0x8000u, 0, 0, { 2200, 800, -3500 }, { 4065, 758, -4170 } },
+	{ LevelIDs_HiddenBase, 0, 0x4000, 0, { -2295, 110, -2845 }, { -3525, 920, -4960 } },
+	{ LevelIDs_EternalEngine, 0x4000, 0x4000, 0, { -2055, 936, -5825 }, { -652, 788, -4426 } },
+	{ LevelIDs_CannonsCoreT, 0, 0xFFFFu, 0, { -1050, 638, -1540 }, { 0, 670, 0 } },
+	{ LevelIDs_Invalid },
+};
+
+LevelEndPosition RougeEnd[] = {
+	{ LevelIDs_SecurityHall, 0, 0x4000, 0, { 100, -573, 490 }, { 0, 314.6f, 110 } },
+	{ LevelIDs_DryLagoon, 0x8000u, 0x7000, 0, { 191, 211, 1317 }, { 1728, 0, -382 } },
+	{ LevelIDs_EggQuarters, 0x8000u, 0x8000u, 0, { 100, 70, 1255 }, { -655, -20, 2680 } },
+	{ LevelIDs_CannonsCoreR, 0x4000, 0xFFFFu, 0, { 80, 135, 80 }, { 0, 480, 150 } },
+	{ LevelIDs_MadSpace, 0xEC00u, 0, 0, { 272.5f, 2358, -334.5f }, { -154, 3350, 481 } },
+	{ LevelIDs_Invalid },
+};
+
+LevelEndPosition ShadowEnd[] = {
+	{ LevelIDs_BasicTest, 0, 0, 0, { 0 }, { 0 } },
+	{ LevelIDs_RadicalHighway, 0xC000u, 0x8000u, 0, { -40, -400, -970 }, { -6330, -4500, -8830 } },
+	{ LevelIDs_WhiteJungle, 0xC000u, 0xB000u, 0, { 5040, -2220, -1550 }, { 13280, -3157, -7370 } },
+	{ LevelIDs_FinalChase, 0xC000u, 0xE000u, 0, { 3408, -6592, 16865 }, { -695, -6959.5f, 10275 } },
+	{ LevelIDs_SkyRail, 0x8000u, 0xA000u, 0, { -2411, -1792, 4260 }, { -3457, -1047, 3001 } },
+	{ LevelIDs_Invalid },
+};
+
+LevelEndPosition SonicEnd[] = {
+	{ LevelIDs_BasicTest },
+	{ LevelIDs_GreenForest, 0x8000u, 0x8000u, 0, { 5858, -1812, 7541 }, { 6890, -1610, 7542 } },
+	{ LevelIDs_MetalHarbor, 0, 0x4000, 0, { 2158, -160, -5294 }, { 1707, -170, -6583 } },
+	{ LevelIDs_CityEscape, 0xC000u, 0x4000, 0, { -1570, -6060, 8860 }, { 7700, -13145, 5570 } },
+	{ LevelIDs_CrazyGadget, 0xC000u, 0x8000u, 0, { -9710, -1045, -4005 }, { -8725, -537, -2905 } },
+	{ LevelIDs_PyramidCave, 0x4000, 0, 0, { -685, -4190, -19525 }, { -2170, -3970, -21870 } },
+	{ LevelIDs_FinalRush, 0, 0xC000u, 0, { 5776, -15687, 20080 }, { 4207, -16632, 24462 } },
+	{ LevelIDs_CannonsCoreS, 0x4000, 0x4000, 0, { 0, -480, -1550 }, { -510, -655, -4700 } },
+	{ LevelIDs_Invalid },
+};
+
+LevelEndPosition* SonicEndList[] = { SonicEnd, ShadowEnd, MechTailsEnd, MechEggmanEnd, KnucklesEnd, RougeEnd };
+LevelEndPosition* ShadowEndList[] = { ShadowEnd, SonicEnd, MechEggmanEnd, MechTailsEnd, RougeEnd, KnucklesEnd };
+LevelEndPosition* MechTailsEndList[] = { MechTailsEnd, MechEggmanEnd, SonicEnd, ShadowEnd, KnucklesEnd, RougeEnd };
+LevelEndPosition* MechEggmanEndList[] = { MechEggmanEnd, MechTailsEnd, ShadowEnd, SonicEnd, RougeEnd, KnucklesEnd };
+LevelEndPosition* KnucklesEndList[] = { KnucklesEnd, RougeEnd, SonicEnd, ShadowEnd, MechTailsEnd, MechEggmanEnd };
+LevelEndPosition* RougeEndList[] = { RougeEnd, KnucklesEnd, ShadowEnd, SonicEnd, MechEggmanEnd, MechTailsEnd };
+
+static const void* const sub_46DC70Ptr = (void*)0x46DC70;
+void sub_46DC70(int a1, NJS_VECTOR* a2, char a3)
 {
 	__asm
 	{
 		xor eax, eax
-			mov al, [a3]
+		mov al, [a3]
 		push eax
-			mov eax, [a1]
+		mov eax, [a1]
 		mov ecx, [a2]
 		call sub_46DC70Ptr
-			add esp, 4
+		add esp, 4
 	}
 }
 
 DataArray(char, byte_1DE4664, 0x1DE4664, 2);
-DataPointer(void *, off_1DE95E0, 0x1DE95E0);
+DataPointer(void*, off_1DE95E0, 0x1DE95E0);
 
 signed int sub_46DBD0(int a1)
 {
-	CharObj2Base *v1; // eax@1
+	CharObj2Base* v1; // eax@1
 	signed int result; // eax@2
 
 	v1 = MainCharObj2[a1];
-	if ( v1 )
+	if (v1)
 		result = v1->CharID;
 	else
 		result = -1;
@@ -763,86 +674,84 @@ signed int LoadEndPosition_r(int playerNum)
 	int v1; // edi@1
 	__int16 v2; // bp@2
 	int v3; // edx@12
-	EntityData1 *v4; // esi@12
-	LevelEndPosition **list;
-	LevelEndPosition *v5 = NULL; // eax@13
+	EntityData1* v4; // esi@12
+	LevelEndPosition** list;
+	LevelEndPosition* v5; // eax@13
 	int v8; // edi@24
 	int v9; // ecx@24
-	NJS_VECTOR *v10; // eax@24
+	NJS_VECTOR* v10; // eax@24
 	float v11; // ST14_4@24
 
 	v1 = playerNum;
-	if ( TwoPlayerMode
+	v5 = &SonicEnd[0];
+	if (TwoPlayerMode
 		|| (v2 = CurrentLevel, (short)CurrentLevel == LevelIDs_SonicVsShadow1)
 		|| (short)CurrentLevel == LevelIDs_SonicVsShadow2
 		|| (short)CurrentLevel == LevelIDs_TailsVsEggman1
 		|| (short)CurrentLevel == LevelIDs_TailsVsEggman2
 		|| (short)CurrentLevel == LevelIDs_KnucklesVsRouge
 		|| (short)CurrentLevel > LevelIDs_BigFoot && (short)CurrentLevel != LevelIDs_Route101280
-		|| MissionNum != 1 && MissionNum != 2 )
+		|| MissionNum != 1 && MissionNum != 2)
 		return 0;
 	else
 	{
 		v3 = MissionNum == 1 ? 0 : 1;
 		v4 = MainCharacter[playerNum]->Data1.Entity;
-		switch ( sub_46DBD0(playerNum) )
+		switch (sub_46DBD0(playerNum))
 		{
 		case Characters_Sonic:
 		case Characters_Tails:
 		case Characters_SuperSonic:
-			list = NSonicEndArray;
+			list = SonicEndList;
 			break;
 		case Characters_Shadow:
 		case Characters_Eggman:
 		case Characters_SuperShadow:
-			list = NShadowEndArray;
+			list = ShadowEndList;
 			break;
 		case Characters_Knuckles:
-			list = NKnucklesEndArray;
+			list = KnucklesEndList;
 			break;
 		case Characters_Rouge:
-			list = NRougeEndArray;
+			list = RougeEndList;
 			break;
 		case Characters_MechEggman:
-			list = NMechEggmanEndArray;
+			list = MechEggmanEndList;
 			break;
 		case Characters_MechTails:
-			list = NMechTailsEndArray;
+			list = MechTailsEndList;
 			break;
 		default:
 			return 0;
 		}
-		for (int i = 0; i < (int)LengthOfArray(NSonicEndArray); i++)
+		for (int i = 0; i < (int)LengthOfArray(SonicEndList); i++)
 		{
 			v5 = list[i];
-			while ( v5->Level != LevelIDs_Invalid )
+			while (v5->Level != LevelIDs_Invalid)
 			{
-				if ( v5->Level == v2 )
+				if (v5->Level == v2)
 					goto endloop;
 				++v5;
 			}
 		}
 	endloop:
-		if (*(&v5->Mission2YRotation + v3) == 0xFFFF )
+		if (*(&v5->Mission2YRotation + v3) == 0xFFFF)
 			return 0;
 		v4->Rotation.z = 0;
 		v4->Rotation.x = 0;
 		v9 = *(&v5->Mission2YRotation + v3);
 		v4->Rotation.y = v9;
-		*((int *)*(&off_1DE95E0 + v1) + 7) = v9;
-		v10 = (NJS_VECTOR *)((char *)&v5->Mission2Position + 12 * v3);
+		*((int*) * (&off_1DE95E0 + v1) + 7) = v9;
+		v10 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v3);
 		v4->Position = *v10;
 		v11 = v4->Position.y - 10.0f;
-		*(float *)&MainCharObj2[v1]->field_1A0[20] = v11;
+		*(float*)&MainCharObj2[v1]->field_1A0[5] = v11;
 		MainCharObj2[v1]->field_144[0] = 0;
 		sub_46DC70(v1, &v4->Position, 0);
 		v4->Collision->CollisionArray->field_2 |= 0x70u;
-		MainCharObj2[v1]->gap_70[24] = 0;
-		MainCharObj2[v1]->gap_70[25] = 0;
-		MainCharObj2[v1]->gap_70[26] = 0;
-		MainCharObj2[v1]->gap_70[27] = 0;
+		*(int*)&MainCharObj2[v1]->gap_70[24] = 0;
 		v8 = v1 & 1;
-		if ( (short)CurrentLevel == LevelIDs_LostColony )
+		if ((short)CurrentLevel == LevelIDs_LostColony)
 		{
 			byte_1DE4664[v8] = 5;
 			return 1;
@@ -858,50 +767,50 @@ signed int LoadEndPosition_r(int playerNum)
 void __cdecl sub_43DF30_i(int playerNum)
 {
 	int v1; // edi@1
-	ObjectMaster *v2; // esi@1
-	CharObj2Base *v3; // eax@3
-	EntityData1 *v4; // esi@3
-	StartPosition **list;
-	StartPosition *v5; // eax@5
+	ObjectMaster* v2; // esi@1
+	CharObj2Base* v3; // eax@3
+	EntityData1* v4; // esi@3
+	StartPosition** list;
+	StartPosition* v5; // eax@5
 	int v6; // edx@20
 	int v8; // ecx@30
 	float v10; // ST14_4@30
 
 	v1 = playerNum;
 	v2 = MainCharacter[playerNum];
-	if ( v2 && LoadEndPosition_r(playerNum) != 1 )
+	if (v2 && LoadEndPosition_r(playerNum) != 1)
 	{
 		v3 = MainCharObj2[v1];
 		v4 = v2->Data1.Entity;
-		if ( v3 )
+		if (v3)
 		{
-			switch ( v3->CharID )
+			switch (v3->CharID)
 			{
 			case Characters_Sonic:
 			case Characters_Tails:
-				list = NSonicStartArray2;
+				list = SonicStartList2;
 				break;
 			case Characters_Shadow:
 			case Characters_Eggman:
-				list = NShadowStartArray2;
+				list = ShadowStartList2;
 				break;
 			case Characters_Knuckles:
-				list = NKnucklesStartArray2;
+				list = KnucklesStartList2;
 				break;
 			case Characters_Rouge:
-				list = NRougeStartArray2;
+				list = RougeStartList2;
 				break;
 			case Characters_MechEggman:
-				list = NMechEggmanStartArray2;
+				list = MechEggmanStartList2;
 				break;
 			case Characters_MechTails:
-				list = NMechTailsStartArray2;
+				list = MechTailsStartList2;
 				break;
 			case Characters_SuperSonic:
-				list = NSuperSonicStartArray2;
+				list = SuperSonicStartList2;
 				break;
 			case Characters_SuperShadow:
-				list = NSuperShadowStartArray2;
+				list = SuperShadowStartList2;
 				break;
 			default:
 				goto LABEL_13;
@@ -909,35 +818,35 @@ void __cdecl sub_43DF30_i(int playerNum)
 		}
 		else
 		{
-LABEL_13:
+		LABEL_13:
 			list = 0;
 		}
-		if ( TwoPlayerMode
+		if (TwoPlayerMode
 			|| (short)CurrentLevel == LevelIDs_SonicVsShadow1
 			|| (short)CurrentLevel == LevelIDs_SonicVsShadow2
 			|| (short)CurrentLevel == LevelIDs_TailsVsEggman1
 			|| (short)CurrentLevel == LevelIDs_TailsVsEggman2
-			|| (short)CurrentLevel == LevelIDs_KnucklesVsRouge )
+			|| (short)CurrentLevel == LevelIDs_KnucklesVsRouge)
 			v6 = (v1 != 0) + 1;
 		else
 			v6 = 0;
-		if ( list )
+		if (list)
 		{
-			for (int i = 0; i < (int)LengthOfArray(NSonicStartArray2); i++)
+			for (int i = 0; i < (int)LengthOfArray(SonicStartList2); i++)
 			{
 				v5 = list[i];
-				while ( v5->Level != LevelIDs_Invalid )
+				while (v5->Level != LevelIDs_Invalid)
 				{
-					if ( v5->Level == (short)CurrentLevel )
+					if (v5->Level == (short)CurrentLevel)
 					{
 						v4->Rotation.z = 0;
 						v4->Rotation.x = 0;
 						v8 = *(&v5->Rotation1P + v6);
 						v4->Rotation.y = v8;
-						*((int *)*(&off_1DE95E0 + v1) + 7) = v8;
+						*((int*) * (&off_1DE95E0 + v1) + 7) = v8;
 						v4->Position = (&v5->Position1P)[v6];
 						v10 = v4->Position.y - 10.0f;
-						*(float *)&MainCharObj2[v1]->field_1A0[20] = v10;
+						*(float*)&MainCharObj2[v1]->field_1A0[5] = v10;
 						MainCharObj2[v1]->field_144[0] = 0;
 						goto LABEL_27;
 					}
@@ -951,15 +860,12 @@ LABEL_13:
 		v4->Position.z = 0.0;
 		v4->Position.y = 0.0;
 		v4->Position.x = 0.0;
-		*((int *)*(&off_1DE95E0 + v1) + 7) = 0;
-LABEL_27:
+		*((int*) * (&off_1DE95E0 + v1) + 7) = 0;
+	LABEL_27:
 		sub_46DC70(v1, &v4->Position, 0);
 		v4->Collision->CollisionArray->field_2 |= 0x70u;
-		MainCharObj2[v1]->gap_70[24] = 0;
-		MainCharObj2[v1]->gap_70[25] = 0;
-		MainCharObj2[v1]->gap_70[26] = 0;
-		MainCharObj2[v1]->gap_70[27] = 0;
-		if ( (short)CurrentLevel == LevelIDs_RadicalHighway || (short)CurrentLevel == LevelIDs_LostColony )
+		*(int*)&MainCharObj2[v1]->gap_70[24] = 0;
+		if ((short)CurrentLevel == LevelIDs_RadicalHighway || (short)CurrentLevel == LevelIDs_LostColony)
 			byte_1DE4664[v1 & 1] = 5;
 		else
 			byte_1DE4664[v1 & 1] = *(char*)0x1DE4660;
@@ -977,6 +883,10 @@ __declspec(naked) void sub_43DF30()
 	}
 }
 
+#pragma endregion
+#pragma region 2P Intro Pos
+
+#pragma warning(disable : 4838)
 LevelEndPosition Knuckles2PIntro[] = {
 	{ LevelIDs_PumpkinHill, 0x5800, 0x5800, 0, { -193, -742.38f, -908.24f }, { -193, -742.38f, -908.24f } },
 	{ LevelIDs_DeathChamber, 0, 0xC000u, 0, { 0, 210, 150 }, { 150, 210, 0 } },
@@ -1064,61 +974,62 @@ LevelEndPosition Sonic2PIntro[] = {
 	{ LevelIDs_DowntownRace, 0xF700u, 0xB00, 0, { -2010, 4793, -5215 }, { -2010, 4793, -5110 } },
 	{ LevelIDs_Invalid },
 };
+#pragma warning(default : 4838)
 
-LevelEndPosition *NSonic2PIntroArray[] = { Sonic2PIntro, Shadow2PIntro, MechTails2PIntro, MechEggman2PIntro, Knuckles2PIntro, Rouge2PIntro };
-LevelEndPosition *NShadow2PIntroArray[] = { Shadow2PIntro, Sonic2PIntro, MechEggman2PIntro, MechTails2PIntro, Rouge2PIntro, Knuckles2PIntro };
-LevelEndPosition *NMechTails2PIntroArray[] = { MechTails2PIntro, MechEggman2PIntro, Sonic2PIntro, Shadow2PIntro, Knuckles2PIntro, Rouge2PIntro };
-LevelEndPosition *NMechEggman2PIntroArray[] = { MechEggman2PIntro, MechTails2PIntro, Shadow2PIntro, Sonic2PIntro, Rouge2PIntro, Knuckles2PIntro };
-LevelEndPosition *NKnuckles2PIntroArray[] = { Knuckles2PIntro, Rouge2PIntro, Sonic2PIntro, Shadow2PIntro, MechTails2PIntro, MechEggman2PIntro };
-LevelEndPosition *NRouge2PIntroArray[] = { Rouge2PIntro, Knuckles2PIntro, Shadow2PIntro, Sonic2PIntro, MechEggman2PIntro, MechTails2PIntro };
+LevelEndPosition* Sonic2PIntroList[] = { Sonic2PIntro, Shadow2PIntro, MechTails2PIntro, MechEggman2PIntro, Knuckles2PIntro, Rouge2PIntro };
+LevelEndPosition* Shadow2PIntroList[] = { Shadow2PIntro, Sonic2PIntro, MechEggman2PIntro, MechTails2PIntro, Rouge2PIntro, Knuckles2PIntro };
+LevelEndPosition* MechTails2PIntroList[] = { MechTails2PIntro, MechEggman2PIntro, Sonic2PIntro, Shadow2PIntro, Knuckles2PIntro, Rouge2PIntro };
+LevelEndPosition* MechEggman2PIntroList[] = { MechEggman2PIntro, MechTails2PIntro, Shadow2PIntro, Sonic2PIntro, Rouge2PIntro, Knuckles2PIntro };
+LevelEndPosition* Knuckles2PIntroList[] = { Knuckles2PIntro, Rouge2PIntro, Sonic2PIntro, Shadow2PIntro, MechTails2PIntro, MechEggman2PIntro };
+LevelEndPosition* Rouge2PIntroList[] = { Rouge2PIntro, Knuckles2PIntro, Shadow2PIntro, Sonic2PIntro, MechEggman2PIntro, MechTails2PIntro };
 
 void __cdecl Load2PIntroPos_ri(int playerNum)
 {
-	ObjectMaster *v1; // eax@1
+	ObjectMaster* v1; // eax@1
 	int v2; // edi@1
-	CharObj2Base *v3; // eax@2
-	EntityData1 *v4; // esi@2
-	LevelEndPosition **list;
-	LevelEndPosition *v5; // eax@4
+	CharObj2Base* v3; // eax@2
+	EntityData1* v4; // esi@2
+	LevelEndPosition** list;
+	LevelEndPosition* v5; // eax@4
 	bool v6; // edx@11
-	NJS_VECTOR *v8; // ecx@15
-	CharObj2Base *v9; // eax@16
+	NJS_VECTOR* v8; // ecx@15
+	CharObj2Base* v9; // eax@16
 	int v10; // edi@16
 	char v11; // al@16
-	NJS_VECTOR *v12; // eax@20
+	NJS_VECTOR* v12; // eax@20
 	float v13; // ST10_4@20
 
 	v2 = playerNum;
 	v1 = MainCharacter[playerNum];
-	if ( v1 )
+	if (v1)
 	{
 		v4 = v1->Data1.Entity;
 		v3 = MainCharObj2[v2];
-		if ( v3 )
+		if (v3)
 		{
-			switch ( v3->CharID )
+			switch (v3->CharID)
 			{
 			case Characters_Sonic:
 			case Characters_Tails:
 			case Characters_SuperSonic:
-				list = NSonic2PIntroArray;
+				list = Sonic2PIntroList;
 				break;
 			case Characters_Shadow:
 			case Characters_Eggman:
 			case Characters_SuperShadow:
-				list = NShadow2PIntroArray;
+				list = Shadow2PIntroList;
 				break;
 			case Characters_Knuckles:
-				list = NKnuckles2PIntroArray;
+				list = Knuckles2PIntroList;
 				break;
 			case Characters_Rouge:
-				list = NRouge2PIntroArray;
+				list = Rouge2PIntroList;
 				break;
 			case Characters_MechEggman:
-				list = NMechEggman2PIntroArray;
+				list = MechEggman2PIntroList;
 				break;
 			case Characters_MechTails:
-				list = NMechTails2PIntroArray;
+				list = MechTails2PIntroList;
 				break;
 			default:
 				goto LABEL_10;
@@ -1126,26 +1037,26 @@ void __cdecl Load2PIntroPos_ri(int playerNum)
 		}
 		else
 		{
-LABEL_10:
+		LABEL_10:
 			list = 0;
 		}
 		v6 = v2 != 0;
-		if ( list )
+		if (list)
 		{
-			for (int i = 0; i < (int)LengthOfArray(NSonic2PIntroArray); i++)
+			for (int i = 0; i < (int)LengthOfArray(Sonic2PIntroList); i++)
 			{
 				v5 = list[i];
-				while ( v5->Level != LevelIDs_Invalid )
+				while (v5->Level != LevelIDs_Invalid)
 				{
-					if ( v5->Level == (short)CurrentLevel )
+					if (v5->Level == (short)CurrentLevel)
 					{
 						v4->Rotation.y = *(&v5->Mission2YRotation + v6);
-						v12 = (NJS_VECTOR *)((char *)&v5->Mission2Position + 12 * v6);
+						v12 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v6);
 						v4->Position = *v12;
 						v8 = &v4->Position;
-						*((int *)*(&off_1DE95E0 + v2) + 7) = v4->Rotation.y;
+						*((int*) * (&off_1DE95E0 + v2) + 7) = v4->Rotation.y;
 						v13 = v4->Position.y - 10.0f;
-						*(float *)&MainCharObj2[v2]->field_1A0[5] = v13;
+						*(float*)&MainCharObj2[v2]->field_1A0[5] = v13;
 						goto LABEL_16;
 					}
 					++v5;
@@ -1157,28 +1068,25 @@ LABEL_10:
 		v4->Position.y = 0.0;
 		v4->Rotation.y = 0;
 		v4->Position.x = 0.0;
-LABEL_16:
+	LABEL_16:
 		sub_46DC70(v2, v8, 0);
 		v4->Collision->CollisionArray->field_2 |= 0x70u;
 		v11 = *(char*)0x1DE4660;
-		MainCharObj2[v2]->gap_70[24] = 0;
-		MainCharObj2[v2]->gap_70[25] = 0;
-		MainCharObj2[v2]->gap_70[26] = 0;
-		MainCharObj2[v2]->gap_70[27] = 0;
+		*(int*)&MainCharObj2[v2]->gap_70[24] = 0;
 		byte_1DE4664[v2 & 1] = v11;
 		v9 = MainCharObj2[v2];
-		v10 = (int)*(&off_1DE95E0 + v2);
-		if ( v9 )
+		v10 = (int) * (&off_1DE95E0 + v2);
+		if (v9)
 		{
 			v9->Speed.x = 0.0;
 			v9->Speed.y = 0.0;
 			v9->Speed.z = 0.0;
 		}
-		if ( v10 )
+		if (v10)
 		{
-			*(float *)(v10 + 8) = 0.0;
-			*(float *)(v10 + 4) = 0.0;
-			*(float *)v10 = 0.0;
+			*(float*)(v10 + 8) = 0.0;
+			*(float*)(v10 + 4) = 0.0;
+			*(float*)v10 = 0.0;
 		}
 	}
 }
@@ -1188,162 +1096,58 @@ __declspec(naked) void Load2PIntroPos_r()
 	__asm
 	{
 		push eax
-			call Load2PIntroPos_ri
-			add esp, 4
-			retn
+		call Load2PIntroPos_ri
+		add esp, 4
+		retn
 	}
 }
 
-void __cdecl LoadBossCharacter()
+#pragma endregion
+#pragma region 2P Race Bar
+
+CharObj2Base* __cdecl loc_727E5B_i(int playerNum)
 {
-	int character = CurrentCharacter ^ 1;
-	int buttons = MenuPressedButtons[1];
-	if (buttons & Buttons_Left)
-		character = Characters_Sonic;
-	if (buttons & Buttons_Right)
-		character = Characters_Shadow;
-	if (buttons & Buttons_Down)
-		character = Characters_Knuckles;
-	if (buttons & Buttons_Up)
-		character = Characters_Rouge;
-	if (buttons & Buttons_R)
-		character = Characters_MechTails;
-	if (buttons & Buttons_L)
-		character = Characters_MechEggman;
-	if (buttons & Buttons_Y)
-		character = Characters_Tails;
-	if (buttons & Buttons_X)
-		character = Characters_Eggman;
-	if (buttons & Buttons_B)
-		AltCharacter[1] = 1;
-	if (buttons & Buttons_A)
-		AltCostume[1] = 1;
-	switch (character)
+	CharObj2Base* v13 = MainCharObj2[playerNum];
+	NJS_TEXLIST* v12 = 0;
+	if (v13)
 	{
-	case Characters_Sonic:
-		LoadSonic(1);
-		break;
-	case Characters_Shadow:
-		LoadShadow(1);
-		break;
-	case Characters_Tails:
-		LoadTails(1);
-		break;
-	case Characters_Eggman:
-		LoadEggman(1);
-		break;
-	case Characters_Knuckles:
-		LoadKnuckles(1);
-		break;
-	case Characters_Rouge:
-		LoadRouge(1);
-		break;
-	case Characters_MechTails:
-		LoadMechTails(1);
-		break;
-	case Characters_MechEggman:
-		LoadMechEggman(1);
-		break;
-	}
-}
-
-const void *const loc_6193F5 = (void*)0x6193F5;
-__declspec(naked) void sub_6193D0()
-{
-	LoadBossCharacter();
-	__asm
-	{
-		push ebx
-		push esi
-		push edi
-		xor ebx, ebx
-		jmp loc_6193F5
-	}
-}
-
-const void *const loc_4C7120 = (void*)0x4C7120;
-__declspec(naked) void sub_4C7100()
-{
-	LoadBossCharacter();
-	__asm jmp loc_4C7120
-}
-
-const void *const loc_6486B2 = (void*)0x6486B2;
-__declspec(naked) void sub_648690()
-{
-	LoadBossCharacter();
-	__asm jmp loc_6486B2
-}
-
-const void *const loc_6266A2 = (void*)0x6266A2;
-__declspec(naked) void sub_626680()
-{
-	LoadBossCharacter();
-	__asm jmp loc_6266A2
-}
-
-const void *const loc_661D12 = (void*)0x661D12;
-__declspec(naked) void sub_661CF0()
-{
-	LoadBossCharacter();
-	__asm jmp loc_661D12
-}
-
-DataPointer(NJS_TEXLIST, OTexList_SonicLife, 0x171A654);
-DataPointer(NJS_TEXLIST, OTexList_ShadowLife, 0x171A65C);
-DataPointer(NJS_TEXLIST, OTexList_TailsLife, 0x171A670);
-DataPointer(NJS_TEXLIST, OTexList_EggmanLife, 0x171A690);
-DataPointer(NJS_TEXLIST, OTexList_KnucklesLife, 0x171A6A4);
-DataPointer(NJS_TEXLIST, OTexList_RougeLife, 0x171A6B8);
-DataPointer(NJS_TEXLIST, OTexList_AmyLife, 0x171A6CC);
-DataPointer(NJS_TEXLIST, OTexList_MetalLife, 0x171A6E0);
-DataPointer(NJS_TEXLIST, OTexList_ChaoLife, 0x171A6F4);
-DataPointer(NJS_TEXLIST, OTexList_DarkChaoLife, 0x171A708);
-DataPointer(NJS_TEXLIST, OTexList_TikalLife, 0x171A71C);
-DataPointer(NJS_TEXLIST, OTexList_ChaosLife, 0x171A730);
-CharObj2Base *__cdecl loc_727E5B_i(int playerNum)
-{
-	CharObj2Base *v13 = MainCharObj2[playerNum];
-	NJS_TEXLIST *v12 = 0;
-	if ( v13 )
-	{
-		switch ( v13->CharID2 )
+		switch (v13->CharID2)
 		{
 		case Characters_Sonic:
 		case Characters_SuperSonic:
-			v12 = &OTexList_SonicLife;
+			v12 = &TexList_SonicLife;
 			break;
 		case Characters_Shadow:
 		case Characters_SuperShadow:
-			v12 = &OTexList_ShadowLife;
+			v12 = &TexList_ShadowLife;
 			break;
 		case Characters_Amy:
-			v12 = &OTexList_AmyLife;
+			v12 = &TexList_AmyLife;
 			break;
 		case Characters_MetalSonic:
-			v12 = &OTexList_MetalLife;
+			v12 = &TexList_MetalLife;
 			break;
 		case Characters_Tails:
 		case Characters_MechTails:
-			v12 = &OTexList_TailsLife;
+			v12 = &TexList_TailsLife;
 			break;
 		case Characters_ChaoWalker:
-			v12 = &OTexList_ChaoLife;
+			v12 = &TexList_ChaoLife;
 			break;
 		case Characters_DarkChaoWalker:
-			v12 = &OTexList_DarkChaoLife;
+			v12 = &TexList_DarkChaoLife;
 			break;
 		case Characters_Knuckles:
-			v12 = &OTexList_KnucklesLife;
+			v12 = &TexList_KnucklesLife;
 			break;
 		case Characters_Rouge:
-			v12 = &OTexList_RougeLife;
+			v12 = &TexList_RougeLife;
 			break;
 		case Characters_Tikal:
-			v12 = &OTexList_TikalLife;
+			v12 = &TexList_TikalLife;
 			break;
 		case Characters_Chaos:
-			v12 = &OTexList_ChaosLife;
+			v12 = &TexList_ChaosLife;
 			break;
 		default:
 			return 0;
@@ -1353,197 +1157,161 @@ CharObj2Base *__cdecl loc_727E5B_i(int playerNum)
 	return v13;
 }
 
-const void *const loc_727F34 = (void*)0x727F34;
-const void *const loc_727EA8 = (void*)0x727EA8;
+const void* const loc_727F34 = (void*)0x727F34;
+const void* const loc_727EA8 = (void*)0x727EA8;
 __declspec(naked) void loc_727E5B()
 {
 	__asm
 	{
 		push esi
-			call loc_727E5B_i
-			add esp, 4
-			test eax, eax
-			jz lab
-			xor ecx, ecx
-			jmp loc_727EA8
-lab:
+		call loc_727E5B_i
+		add esp, 4
+		test eax, eax
+		jz lab
+		xor ecx, ecx
+		jmp loc_727EA8
+		lab :
 		jmp loc_727F34
 	}
 }
 
-static const void *const loc_6C6431 = (void*)0x6C6431;
-static const void *const loc_6C6412 = (void*)0x6C6412;
+#pragma endregion
+#pragma region Goal Ring
+
+static const void* const loc_6C6431 = (void*)0x6C6431;
+static const void* const loc_6C6412 = (void*)0x6C6412;
 __declspec(naked) void loc_6C63E7()
 {
 	__asm
 	{
 		mov eax, MissionNum
-			cmp	long ptr [eax], 1
-			je	_loc_6C6412
-			mov	eax, [ebp+8]
+		cmp	long ptr[eax], 1
+		je	_loc_6C6412
+		mov	eax, [ebp + 8]
 		cdq
-			mov	esi, 3
-			idiv	esi
-			cmp	edx, 1
-			je _loc_6C6431
-			mov	eax, CurrentLevel
-			mov eax, [eax]
+		mov	esi, 3
+		idiv	esi
+		cmp	edx, 1
+		je _loc_6C6431
+		mov	eax, CurrentLevel
+		mov eax, [eax]
 		cmp	ax, LevelIDs_PumpkinHill
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_AquaticMine
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_SecurityHall
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_WildCanyon
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_DryLagoon
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_DeathChamber
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_EggQuarters
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_MeteorHerd
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_WildCanyon2P
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_MadSpace
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_DryLagoon2P
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_PoolQuest
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_PlanetQuest
-			je	short loc_6C659A
-			cmp	ax, LevelIDs_DeathChamber2P
-			jne	_loc_6C6431
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_AquaticMine
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_SecurityHall
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_WildCanyon
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_DryLagoon
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_DeathChamber
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_EggQuarters
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_MeteorHerd
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_WildCanyon2P
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_MadSpace
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_DryLagoon2P
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_PoolQuest
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_PlanetQuest
+		je	short loc_6C659A
+		cmp	ax, LevelIDs_DeathChamber2P
+		jne	_loc_6C6431
 
-loc_6C659A:
+		loc_6C659A :
 		pop	esi
 			pop	ebp
 			pop	ebx
 			retn
-_loc_6C6412:
+			_loc_6C6412 :
 		mov ecx, 2
 			jmp loc_6C6412
-_loc_6C6431:
+			_loc_6C6431 :
 		mov ecx, 2
-			jmp [loc_6C6431]
+			jmp[loc_6C6431]
 	}
 }
 
-static const void *const Knuckles_LevelBounds_o = (void*)0x737B50;
-__declspec(naked) void Knuckles_LevelBounds_r()
-{
-	__asm
-	{
-		mov	ebx, [CurrentLevel]
-		mov ebx, [ebx]
-		cmp	bx, LevelIDs_PumpkinHill
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_AquaticMine
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_SecurityHall
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_WildCanyon
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DryLagoon
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DeathChamber
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_EggQuarters
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_MeteorHerd
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_WildCanyon2P
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_MadSpace
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DryLagoon2P
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_PoolQuest
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_PlanetQuest
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DeathChamber2P
-		je	j_Knuckles_LevelBounds
-		xor	eax, eax
-		retn
-j_Knuckles_LevelBounds:
-		jmp [Knuckles_LevelBounds_o]
-	}
-}
+#pragma endregion
+#pragma region Title Card Textures
 
 DataPointer(NJS_TEXLIST, stru_1738D90, 0x1738D90);
 DataPointer(NJS_TEXLIST, stru_1738DB0, 0x1738DB0);
 void LoadTitleCardTextures()
 {
-	char *v15; // esi@19
+	const char* v15; // esi@19
 	char filename[24]; // [sp+Ch] [bp-20h]@27
 
-	if ( TwoPlayerMode || CurrentLevel == LevelIDs_Route101280 )
+	if (TwoPlayerMode || CurrentLevel == LevelIDs_Route101280)
 	{
-		switch ( CurrentCharacter )
+		switch (CurrentCharacter)
 		{
 		case Characters_Knuckles:
 		case Characters_Rouge:
-			v15 = (char*)"KN";
+			v15 = "KN";
 			break;
 		case Characters_Tails:
 		case Characters_Eggman:
 		case Characters_MechTails:
 		case Characters_MechEggman:
-			v15 = (char*)"TA";
+			v15 = "TA";
 			break;
 		default:
-			v15 = (char*)"SO";
+			v15 = "SO";
 			break;
 		}
 	}
 	else
 	{
-		if ( CurrentLevel == LevelIDs_CannonsCoreT )
+		if (CurrentLevel == LevelIDs_CannonsCoreT)
 			goto LABEL_26;
-		switch ( MainCharObj2[0]->CharID2 )
+		switch (MainCharObj2[0]->CharID2)
 		{
 		case Characters_Shadow:
 		case Characters_SuperShadow:
-			v15 = (char*)"SH";
+			v15 = "SH";
 			break;
 		case Characters_Eggman:
 		case Characters_MechEggman:
-			v15 = (char*)"EG";
+			v15 = "EG";
 			break;
 		case Characters_Tails:
 		case Characters_MechTails:
-			v15 = (char*)"TA";
+			v15 = "TA";
 			break;
 		case Characters_Knuckles:
-			v15 = (char*)"KN";
+			v15 = "KN";
 			break;
 		case Characters_Rouge:
-			v15 = (char*)"RO";
+			v15 = "RO";
 			break;
 		case Characters_Amy:
-			v15 = (char*)"AM";
+			v15 = "AM";
 			break;
 		case Characters_MetalSonic:
-			v15 = (char*)"ME";
+			v15 = "ME";
 			break;
 		case Characters_Tikal:
-			v15 = (char*)"TI";
+			v15 = "TI";
 			break;
 		case Characters_Chaos:
-			v15 = (char*)"C0";
+			v15 = "C0";
 			break;
 		case Characters_ChaoWalker:
-			v15 = (char*)"CH";
+			v15 = "CH";
 			break;
 		case Characters_DarkChaoWalker:
-			v15 = (char*)"DC";
+			v15 = "DC";
 			break;
 		default:
-LABEL_26:
-			v15 = (char*)"SO";
+		LABEL_26:
+			v15 = "SO";
 			break;
 		}
 	}
@@ -1553,41 +1321,44 @@ LABEL_26:
 	LoadTextureList(filename, &stru_1738DB0);
 }
 
-static const void *const loc_472B12 = (void*)0x472B12;
+static const void* const loc_472B12 = (void*)0x472B12;
 __declspec(naked) void loc_472A7D()
 {
 	LoadTitleCardTextures();
 	__asm jmp loc_472B12
 }
 
+#pragma endregion
+#pragma region End Level Voices
+
 DataArray(char, byte_174AFF5, 0x174AFF5, 2);
 void PlayEndLevelVoice(int playerNum)
 {
 	bool v3;
 	__int16 v6; // cx@12
-	CharObj2Base *v14; // edx@29
+	CharObj2Base* v14; // edx@29
 	bool v15; // eax@30
 	int v16; // eax@42
 	bool v17; // eax@62
 
 	if (!HaveChaoKey)
-		*(int *)AltCostume = 0;
+		*(int*)AltCostume = 0;
 	v3 = !playerNum;
 	v6 = CurrentLevel;
 	v14 = MainCharObj2[playerNum];
-	if ( TwoPlayerMode )
+	if (TwoPlayerMode)
 	{
 		v15 = byte_174AFF5[playerNum] != 1;
-		switch ( v14->CharID2 )
+		switch (v14->CharID2)
 		{
 		case Characters_Sonic:
-			if ( byte_174AFF5[playerNum] == 1 )
+			if (byte_174AFF5[playerNum] == 1)
 				v16 = 1529;
 			else
 				v16 = (char)(MainCharObj2[v3]->CharID2 - 1) != 0 ? 1613 : 1531;
 			break;
 		case Characters_Shadow:
-			if ( byte_174AFF5[playerNum] == 1 )
+			if (byte_174AFF5[playerNum] == 1)
 				v16 = MainCharObj2[v3]->CharID2 != 0 ? 1604 : 1528;
 			else
 				v16 = 1530;
@@ -1599,28 +1370,28 @@ void PlayEndLevelVoice(int playerNum)
 			v16 = 2 * (v15 != 0) + 1255;
 			break;
 		case Characters_MechTails:
-			if ( byte_174AFF5[playerNum] == 1 )
+			if (byte_174AFF5[playerNum] == 1)
 				v16 = 1643;
 			else
 				v16 = (((MainCharObj2[v3]->CharID2 != Characters_MechEggman) - 1) & 0xFFFFFFBA) + 1715;
 			break;
 		case Characters_MechEggman:
-			if ( byte_174AFF5[playerNum] != 1 || *(char*)0x174AFD2 )
+			if (byte_174AFF5[playerNum] != 1 || *(char*)0x174AFD2)
 				v16 = 1644;
 			else
 				v16 = 1642;
 			break;
 		case Characters_Amy:
-			if ( byte_174AFF5[playerNum] == 1 )
+			if (byte_174AFF5[playerNum] == 1)
 			{
-				if ( RingCount[playerNum] <= 100 )
+				if (RingCount[playerNum] <= 100)
 					v16 = 8 * (RingCount[v3] < 20) + 2670;
 				else
 					v16 = 2680;
 			}
 			else
 			{
-				if ( RingCount[playerNum] <= 100 )
+				if (RingCount[playerNum] <= 100)
 				{
 					v17 = RingCount[v3] < 20;
 					v17 = RingCount[v3] >= 20;
@@ -1653,10 +1424,10 @@ void PlayEndLevelVoice(int playerNum)
 	}
 	else
 	{
-		switch ( v14->CharID2 )
+		switch (v14->CharID2)
 		{
 		case Characters_Sonic:
-			switch ( v6 )
+			switch (v6)
 			{
 			case LevelIDs_BigFoot:
 				v16 = 1605;
@@ -1679,7 +1450,7 @@ void PlayEndLevelVoice(int playerNum)
 			v16 = (((v6 == LevelIDs_FinalHazard) - 1) & 0xFFFFFFEF) + 1610;
 			break;
 		case Characters_Shadow:
-			switch ( v6 )
+			switch (v6)
 			{
 			case LevelIDs_HotShot:
 				v16 = 1594;
@@ -1702,13 +1473,13 @@ void PlayEndLevelVoice(int playerNum)
 			v16 = (((v6 == LevelIDs_FinalHazard) - 1) & 0xFFFFFFCE) + 1602;
 			break;
 		case Characters_Knuckles:
-			if ( v6 == LevelIDs_KnucklesVsRouge )
+			if (v6 == LevelIDs_KnucklesVsRouge)
 				v16 = 1344;
 			else
 				v16 = v6 != LevelIDs_KingBoomBoo ? 1330 : 1342;
 			break;
 		case Characters_Rouge:
-			if ( v6 == LevelIDs_KnucklesVsRouge )
+			if (v6 == LevelIDs_KnucklesVsRouge)
 				v16 = 1345;
 			else
 				v16 = v6 != LevelIDs_FlyingDog ? 1331 : 1343;
@@ -1744,24 +1515,322 @@ void PlayEndLevelVoice(int playerNum)
 	PlayVoice(2, v16);
 }
 
-static const void *const loc_43F1FC = (void*)0x43F1FC;
+static const void* const loc_43F1FC = (void*)0x43F1FC;
 __declspec(naked) void loc_43EE5F()
 {
 	__asm
 	{
 		push esi
-			call PlayEndLevelVoice
-			pop esi
-			jmp loc_43F1FC
+		call PlayEndLevelVoice
+		pop esi
+		jmp loc_43F1FC
 	}
 }
+
+#pragma endregion
+/*
+#pragma region Chao World Sounds
+
+ThiscallFunctionPointer(void, sub_435880, (const char*), 0x435880);
+void LoadChaoWorldSoundBank()
+{
+	const char* v4;
+
+	int v2 = MainCharObj2[0]->CharID2;
+	switch (v2)
+	{
+	case Characters_Amy:
+	case Characters_MetalSonic:
+		v4 = "chao_chara_sn.mlt";
+		break;
+	case Characters_Knuckles:
+	case Characters_Rouge:
+		v4 = "chao_chara_kr.mlt";
+		break;
+	case Characters_Tikal:
+	case Characters_Chaos:
+		v4 = "se_ch_kn_BATTLE.mlt";
+		break;
+	case Characters_Tails:
+	case Characters_Eggman:
+		v4 = "chao_chara_te.mlt";
+		break;
+	case Characters_MechTails:
+	case Characters_MechEggman:
+		v4 = "se_ch_wk.mlt";
+		break;
+	case Characters_ChaoWalker:
+	case Characters_DarkChaoWalker:
+		v4 = "se_ch_wk_BATTLE.mlt";
+		break;
+	default:
+		v4 = "chao_chara_ss.mlt";
+		break;
+	}
+	sub_435880(v4);
+}
+
+static const int loc_532054 = 0x532054;
+__declspec(naked) void loc_532029()
+{
+	LoadChaoWorldSoundBank();
+	__asm jmp loc_532054
+}
+
+#pragma endregion
+#pragma region Chao World Voices
+
+static const int stru_173A0B8 = 0x173A0B8;
+static const int sub_459010 = 0x459010;
+static const int loc_45923B = 0x45923B;
+__declspec(naked) void loc_2800440()
+{
+	__asm
+	{
+		mov ecx, MainCharObj2
+		movzx ecx, [ecx].CharID2
+		cmp ecx, Characters_Amy
+		jle	short loc_280045F
+		cmp	ecx, Characters_Tikal
+		jz	short loc_280045A
+		cmp	ecx, Characters_Amy
+		jnz	short loc_280045F
+		mov	esi, stru_173A0B8
+		jmp	short loc_280045F
+		; -------------------------------------------------------------------------- -
+
+		loc_280045A:
+		mov	esi, (stru_173A0B8 + 20h)
+
+			loc_280045F :
+			call	sub_459010
+			jmp	loc_45923B
+	}
+}
+
+#pragma endregion
+*/
+#pragma region Upgrade Fixes
+
+// Knuckles Sunglasses
+static const int loc_72F528 = 0x72F528;
+static const int loc_72F4DB = 0x72F4DB;
+static NJS_OBJECT** const KnucklesSunglassesModel = &CharacterModels[161].Model;
+__declspec(naked) void KnucklesSunglassesFix()
+{
+	__asm
+	{
+		mov eax, KnucklesSunglassesModel
+		mov eax, [eax]
+		test eax, eax
+		jz label
+		jmp loc_72F4DB
+		label :
+		jmp loc_72F528
+	}
+}
+
+// Knuckles Air Necklase
+static const int loc_72F564 = 0x72F564;
+static const int loc_72F537 = 0x72F537;
+static NJS_OBJECT** const KnucklesAirNecklaceModel = &CharacterModels[168].Model;
+__declspec(naked) void KnucklesAirNecklaceFix()
+{
+	__asm
+	{
+		mov ecx, KnucklesAirNecklaceModel
+		mov ecx, [ecx]
+		test ecx, ecx
+		jz label
+		jmp loc_72F537
+		label :
+		jmp loc_72F564
+	}
+}
+
+// Eggman Laser Blaster
+static const int loc_74496B = 0x74496B;
+static const int loc_74491A = 0x74491A;
+static NJS_OBJECT** const EggmanLaserBlasterModel = &CharacterModels[260].Model;
+__declspec(naked) void EggmanLaserBlasterFix()
+{
+	__asm
+	{
+		mov edx, EggmanLaserBlasterModel
+		mov edx, [edx]
+		test edx, edx
+		jz label
+		jmp loc_74491A
+		label :
+		jmp loc_74496B
+	}
+}
+
+// Eggman Large Cannon
+static const int loc_744E59 = 0x744E59;
+static const int loc_744E08 = 0x744E08;
+static NJS_OBJECT** const EggmanLargeCannonModel1 = &CharacterModels[262].Model;
+static NJS_OBJECT** const EggmanLargeCannonModel2 = &CharacterModels[263].Model;
+static const float* const flt_8AF004 = (const float*)0x8AF004;
+__declspec(naked) void EggmanLargeCannonFix()
+{
+	__asm
+	{
+		mov eax, EggmanLargeCannonModel1
+		mov eax, [eax]
+		test eax, eax
+		jz label
+		mov eax, EggmanLargeCannonModel2
+		mov eax, [eax]
+		test eax, eax
+		jz label
+		mov eax, flt_8AF004
+		fld[eax]
+		jmp loc_744E08
+		label :
+		jmp loc_744E59
+	}
+}
+
+// Tails Laser Blaster
+static const int loc_7481C3 = 0x7481C3;
+static const int loc_74816E = 0x74816E;
+static NJS_OBJECT** const TailsLaserBlasterModel = &CharacterModels[306].Model;
+__declspec(naked) void TailsLaserBlasterFix()
+{
+	__asm
+	{
+		mov edx, TailsLaserBlasterModel
+		mov edx, [edx]
+		test edx, edx
+		jz label
+		jmp loc_74816E
+		label :
+		jmp loc_7481C3
+	}
+}
+
+// Tails Bazooka
+static const int loc_748717 = 0x748717;
+static const int loc_748620 = 0x748620;
+static NJS_OBJECT** const TailsBazookaModel = &CharacterModels[309].Model;
+__declspec(naked) void TailsBazookaFix()
+{
+	__asm
+	{
+		mov esi, TailsBazookaModel
+		mov esi, [esi]
+		test esi, esi
+		jz label
+		jmp loc_748620
+		label :
+		jmp loc_748717
+	}
+}
+
+#pragma endregion
+
+#pragma region Emerald Manager
+
+bool __cdecl CheckEmeraldManager()
+{
+	if (MissionNum == 1 || MissionNum == 2)
+		return false;
+	if (*(int*)0x1AF014C)
+		return false;
+	switch ((short)CurrentLevel)
+	{
+	case LevelIDs_PumpkinHill:
+	case LevelIDs_AquaticMine:
+	case LevelIDs_SecurityHall:
+	case LevelIDs_WildCanyon:
+	case LevelIDs_DryLagoon:
+	case LevelIDs_DeathChamber:
+	case LevelIDs_EggQuarters:
+	case LevelIDs_MeteorHerd:
+	case LevelIDs_WildCanyon2P:
+	case LevelIDs_MadSpace:
+	case LevelIDs_DryLagoon2P:
+	case LevelIDs_PoolQuest:
+	case LevelIDs_PlanetQuest:
+	case LevelIDs_DeathChamber2P:
+		return true;
+	}
+	return false;
+}
+
+static const void* const loc_73AAC2 = (void*)0x73AAC2;
+__declspec(naked) void LoadEmeraldManager_r()
+{
+	if (!CheckEmeraldManager())
+		__asm retn;
+	__asm
+	{
+		push	esi
+		push	edi
+		jmp loc_73AAC2
+	}
+}
+
+void LoadEmeraldManager_r_wrapper()
+{
+	LoadEmeraldManager_r();
+}
+
+#pragma endregion
+#pragma region LevelBounds
+
+static const void* const Knuckles_LevelBounds_o = (void*)0x737B50;
+__declspec(naked) void Knuckles_LevelBounds_r()
+{
+	__asm
+	{
+		mov	ebx, [CurrentLevel]
+		mov ebx, [ebx]
+		cmp	bx, LevelIDs_PumpkinHill
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_AquaticMine
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_SecurityHall
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_WildCanyon
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_DryLagoon
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_DeathChamber
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_EggQuarters
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_MeteorHerd
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_WildCanyon2P
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_MadSpace
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_DryLagoon2P
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_PoolQuest
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_PlanetQuest
+		je	j_Knuckles_LevelBounds
+		cmp	bx, LevelIDs_DeathChamber2P
+		je	j_Knuckles_LevelBounds
+		xor eax, eax
+		retn
+		j_Knuckles_LevelBounds :
+		jmp[Knuckles_LevelBounds_o]
+	}
+}
+
+#pragma endregion
+#pragma region Animation Loaders
 
 void LoadAquaticMineCharAnims_r()
 {
 	if (CurrentCharacter == Characters_Knuckles)
 		LoadAquaticMineCharAnims();
 	else
-		LoadDryLagoon2PPoolQuestCharAnims();
+		LoadDryLagoon2PCharAnims();
 }
 
 void LoadDryLagoonCharAnims_r()
@@ -1769,7 +1838,7 @@ void LoadDryLagoonCharAnims_r()
 	if (CurrentCharacter == Characters_Rouge)
 		LoadDryLagoonCharAnims();
 	else
-		LoadDryLagoon2PPoolQuestCharAnims();
+		LoadDryLagoon2PCharAnims();
 }
 
 void LoadCannonsCoreRCharAnims_r()
@@ -1777,7 +1846,7 @@ void LoadCannonsCoreRCharAnims_r()
 	if (CurrentCharacter == Characters_Rouge)
 		LoadCannonsCoreRCharAnims();
 	else
-		LoadDryLagoon2PPoolQuestCharAnims();
+		LoadDryLagoon2PCharAnims();
 }
 
 void LoadCannonsCoreKCharAnims_r()
@@ -1785,7 +1854,7 @@ void LoadCannonsCoreKCharAnims_r()
 	if (CurrentCharacter == Characters_Knuckles)
 		LoadCannonsCoreKCharAnims();
 	else
-		LoadDryLagoon2PPoolQuestCharAnims();
+		LoadDryLagoon2PCharAnims();
 }
 
 void LoadSandOceanCharAnims_r()
@@ -1812,135 +1881,8 @@ void LoadEggGolemECharAnims_r()
 		LoadSandOcean2PCharAnims();
 }
 
-static const int loc_72F528 = 0x72F528;
-static const int loc_72F4DB = 0x72F4DB;
-static NJS_OBJECT **const KnucklesSunglassesModel = &CharacterModels[161].Model;
-__declspec(naked) void KnucklesSunglassesFix()
-{
-	__asm
-	{
-		mov eax, KnucklesSunglassesModel
-			mov eax, [eax]
-		test eax, eax
-			jz label
-			jmp loc_72F4DB
-label:
-		jmp loc_72F528
-	}
-}
-
-static const int loc_72F564 = 0x72F564;
-static const int loc_72F537 = 0x72F537;
-static NJS_OBJECT **const KnucklesAirNecklaceModel = &CharacterModels[168].Model;
-__declspec(naked) void KnucklesAirNecklaceFix()
-{
-	__asm
-	{
-		mov ecx, KnucklesAirNecklaceModel
-			mov ecx, [ecx]
-		test ecx, ecx
-			jz label
-			jmp loc_72F537
-label:
-		jmp loc_72F564
-	}
-}
-
-static const int loc_74496B = 0x74496B;
-static const int loc_74491A = 0x74491A;
-static NJS_OBJECT **const EggmanLaserBlasterModel = &CharacterModels[260].Model;
-__declspec(naked) void EggmanLaserBlasterFix()
-{
-	__asm
-	{
-		mov edx, EggmanLaserBlasterModel
-			mov edx, [edx]
-		test edx, edx
-			jz label
-			jmp loc_74491A
-label:
-		jmp loc_74496B
-	}
-}
-
-static const int loc_744E59 = 0x744E59;
-static const int loc_744E08 = 0x744E08;
-static NJS_OBJECT **const EggmanLargeCannonModel1 = &CharacterModels[262].Model;
-static NJS_OBJECT **const EggmanLargeCannonModel2 = &CharacterModels[263].Model;
-static const float *const flt_8AF004 = (const float *)0x8AF004;
-__declspec(naked) void EggmanLargeCannonFix()
-{
-	__asm
-	{
-		mov eax, EggmanLargeCannonModel1
-			mov eax, [eax]
-		test eax, eax
-			jz label
-			mov eax, EggmanLargeCannonModel2
-			mov eax, [eax]
-		test eax, eax
-			jz label
-			mov eax, flt_8AF004
-			fld [eax]
-		jmp loc_744E08
-label:
-		jmp loc_744E59
-	}
-}
-
-static const int loc_7481C3 = 0x7481C3;
-static const int loc_74816E = 0x74816E;
-static NJS_OBJECT **const TailsLaserBlasterModel = &CharacterModels[306].Model;
-__declspec(naked) void TailsLaserBlasterFix()
-{
-	__asm
-	{
-		mov edx, TailsLaserBlasterModel
-			mov edx, [edx]
-		test edx, edx
-			jz label
-			jmp loc_74816E
-label:
-		jmp loc_7481C3
-	}
-}
-
-static const int loc_748717 = 0x748717;
-static const int loc_748620 = 0x748620;
-static NJS_OBJECT **const TailsBazookaModel = &CharacterModels[309].Model;
-__declspec(naked) void TailsBazookaFix()
-{
-	__asm
-	{
-		mov esi, TailsBazookaModel
-			mov esi, [esi]
-		test esi, esi
-			jz label
-			jmp loc_748620
-label:
-		jmp loc_748717
-	}
-}
-
-static const int loc_4EB2B5 = 0x4EB2B5;
-__declspec(naked) void InitSplitscreenPlus()
-{
-	__asm
-	{
-		mov eax, [MenuPressedButtons]
-		mov eax, [eax+4]
-		and eax, Buttons_Start
-		jz label
-		mov dword ptr [esp+4], 2
-label:
-		push    ebx
-		xor     ebx, ebx
-		push    esi
-		push    edi
-		jmp loc_4EB2B5
-	}
-}
-
+#pragma endregion
+#pragma region Animation Lists
 AnimationInfo TailsAnimList2[ChaosAnimList_Length];
 AnimationInfo MechEggmanAnimList2[ChaosAnimList_Length];
 AnimationInfo MechTailsAnimList2[ChaosAnimList_Length];
@@ -1949,9 +1891,125 @@ AnimationInfo DarkChaoWalkerAnimList2[ChaosAnimList_Length];
 AnimationInfo EggmanAnimList2[ChaosAnimList_Length];
 AnimationInfo SonicAnimList2[ChaosAnimList_Length];
 
+pair<short, short> SonicAnimReplacements[] = {
+	{ 211, 1 },
+	{ 212, 77 },
+	{ 215, 15 }
+};
+
+pair<short, short> OthersAnimReplacements[] = {
+	{ 76, 0 },
+	{ 77, 15 },
+	{ 185, 62 },
+	{ 186, 62 },
+	{ 187, 62 },
+	{ 189, 62 },
+	{ 190, 62 },
+	{ 192, 15 },
+	{ 193, 15 },
+	{ 194, 15 },
+	{ 195, 15 },
+	{ 196, 15 },
+	{ 197, 15 },
+	{ 198, 15 },
+	{ 211, 1 },
+	{ 212, 62 },
+	{ 215, 15 }
+};
+
+pair<short, short> KnucklesAnimReplacements[] = {
+	{ 190, 75 },
+	{ 192, 105 },
+	{ 193, 105 },
+	{ 194, 15 },
+	{ 195, 15 },
+	{ 196, 15 },
+	{ 197, 15 },
+	{ 198, 15 },
+	{ 211, 1 },
+	{ 212, 77 },
+	{ 215, 15 }
+};
+
+pair<short, short> MechAnimReplacements[] = {
+	{ 76, 0 },
+	{ 77, 15 },
+	{ 185, 75 },
+	{ 186, 75 },
+	{ 187, 75 },
+	{ 189, 75 },
+	{ 190, 75 },
+	{ 192, 15 },
+	{ 193, 15 },
+	{ 194, 15 },
+	{ 195, 15 },
+	{ 196, 15 },
+	{ 197, 15 },
+	{ 198, 15 },
+	{ 211, 1 },
+	{ 212, 77 },
+	{ 215, 15 }
+};
+
 pair<int, int> listend = { -1, 0 };
+
+void LoadAnimations(int *character, int playerNum)
+{
+	int repcnt;
+	pair<short, short>* replst;
+	switch (*character)
+	{
+	case Characters_Sonic:
+
+		LoadSonic(playerNum);
+		repcnt = (int)LengthOfArray(SonicAnimReplacements);
+		replst = SonicAnimReplacements;
+		break;
+	case Characters_Shadow:
+		LoadShadow(playerNum);
+		repcnt = (int)LengthOfArray(SonicAnimReplacements);
+		replst = SonicAnimReplacements;
+		break;
+	case Characters_Tails:
+		LoadTails(playerNum);
+		repcnt = (int)LengthOfArray(OthersAnimReplacements);
+		replst = OthersAnimReplacements;
+		break;
+	case Characters_Eggman:
+		LoadEggman(playerNum);
+		repcnt = (int)LengthOfArray(OthersAnimReplacements);
+		replst = OthersAnimReplacements;
+		break;
+	case Characters_Knuckles:
+		LoadKnuckles(playerNum);
+		repcnt = (int)LengthOfArray(KnucklesAnimReplacements);
+		replst = KnucklesAnimReplacements;
+		break;
+	case Characters_Rouge:
+		LoadRouge(playerNum);
+		repcnt = (int)LengthOfArray(KnucklesAnimReplacements) - 3;
+		replst = KnucklesAnimReplacements;
+		break;
+	case Characters_MechTails:
+		LoadMechTails(playerNum);
+		repcnt = (int)LengthOfArray(MechAnimReplacements);
+		replst = MechAnimReplacements;
+		break;
+	case Characters_MechEggman:
+		LoadMechEggman(playerNum);
+		repcnt = (int)LengthOfArray(MechAnimReplacements);
+		replst = MechAnimReplacements;
+		break;
+	}
+	InitPlayer(playerNum);
+	AnimationInfo* anilst = MainCharObj2[playerNum]->AnimInfo.Animations;
+	for (int i = 0; i < repcnt; i++)
+		if (!CharacterAnimations[anilst[replst[i].key].AnimNum].Animation)
+			anilst[replst[i].key] = anilst[replst[i].value];
+}
+
 template <size_t N>
-void actionlistthing(pair<int, int> *(&order)[N], void **ptr, bool skipmagichands)
+void actionlistthing(pair<int, int>* (&order)[N], void** ptr, bool skipmagichands)
 {
 	vector<pair<int, int>> tmp;
 	for (size_t i = 0; i < LengthOfArray(order); i++)
@@ -1969,53 +2027,180 @@ void actionlistthing(pair<int, int> *(&order)[N], void **ptr, bool skipmagichand
 		}
 	}
 	tmp.emplace_back(listend);
-	pair<int, int> *buf = new pair<int, int>[tmp.size()];
+	pair<int, int>* buf = new pair<int, int>[tmp.size()];
 	memcpy(buf, tmp.data(), tmp.size() * sizeof(pair<int, int>));
 	WriteData(ptr, (void*)buf);
 }
 
-static string trim(const string &s)
+#pragma endregion
+
+void WritePatches()
 {
-	auto st = s.find_first_not_of(' ');
-	if (st == string::npos)
-		st = 0;
-	auto ed = s.find_last_not_of(' ');
-	if (ed == string::npos)
-		ed = s.size() - 1;
-	return s.substr(st, (ed + 1) - st);
+	unsigned __int8 twobytenop[] = { 0x66, 0x90 };
+	unsigned __int8 fivebytenop[] = { 0x66, 0x90, 0x66, 0x90, 0x90 };
+	unsigned __int8 shortjmp[] = { 0xEB };
+
+	WriteData((void*)0x44E63B, twobytenop); // Dark Chao Walker Life Icon Patch
+	WriteData((void*)0x459110, twobytenop); // 2P Sound Effects Patch
+	WriteData((void*)0x45913B, twobytenop); // 2P Voice Patch
+	WriteData((void*)0x4CD255, twobytenop); // Sonic's Cannon's Core Control Patch
+	WriteData((void*)0x724261, shortjmp); // Sonic Boss Special Patch
+	WriteData((void*)0x736211, shortjmp); // Knuckles Boss Special Patch
+	WriteData((void*)0x7374E4, shortjmp); // Dry Lagoon Turtle Grab Patch
+	WriteData((void*)0x749921, shortjmp); // Mech Boss Special Patch
+	WriteData((void*)0x741690, shortjmp); // Dark Chao Walker Fix
+	WriteData((void*)0x7416DC, shortjmp); // Chao Walker Fix
+	WriteData((void*)0x728141, fivebytenop); // Knuckles emerald manager
+	WriteData((void*)0x728491, fivebytenop); // Rouge emerald manager
+	WriteData((void*)0x7288B7, fivebytenop); // Tikal emerald manager
+	WriteData((void*)0x728B64, fivebytenop); // Chaos emerald manager
+	WriteData((void*)0x716E13, twobytenop); // Amy
+	WriteData((void*)0x716F2C, twobytenop); // Sonic costume
+	WriteData((void*)0x717373, twobytenop); // Metal Sonic
+	WriteData((void*)0x71748C, twobytenop); // Shadow costume
+	WriteData((void*)0x728123, twobytenop); // Tikal
+	WriteData((void*)0x728241, twobytenop); // Knuckles costume
+	WriteData((void*)0x728473, twobytenop); // Chaos
+	WriteData((void*)0x728591, twobytenop); // Rouge costume
+	WriteData((void*)0x740C61, twobytenop); // Dark Chao Walker
+	WriteData((void*)0x740D72, twobytenop); // Eggman costume
+	WriteData((void*)0x740EC1, twobytenop); // Chao Walker
+	WriteData((void*)0x740FD2, twobytenop); // Tails costume
 }
 
-static const unordered_map<string, uint8_t> charnamemap = {
-	{ "sonic", Characters_Sonic },
-	{ "shadow", Characters_Shadow },
-	{ "tails", Characters_Tails },
-	{ "eggman", Characters_Eggman },
-	{ "knuckles", Characters_Knuckles },
-	{ "rouge", Characters_Rouge },
-	{ "mechtails", Characters_MechTails },
-	{ "mecheggman", Characters_MechEggman },
-	{ "amy", Characters_Sonic | altcharacter },
-	{ "metalsonic", Characters_Shadow | altcharacter },
-	{ "tikal", Characters_Knuckles | altcharacter },
-	{ "chaos", Characters_Rouge | altcharacter },
-	{ "chaowalker", Characters_MechTails | altcharacter },
-	{ "darkchaowalker", Characters_MechEggman | altcharacter },
-	{ "sonicalt", Characters_Sonic | altcostume },
-	{ "shadowalt", Characters_Shadow | altcostume },
-	{ "knucklesalt", Characters_Knuckles | altcostume },
-	{ "rougealt", Characters_Rouge | altcostume },
-	{ "mechtailsalt", Characters_MechTails | altcostume },
-	{ "mecheggmanalt", Characters_MechEggman | altcostume }
-};
-
-static uint8_t ParseCharacterID(const string &str, Characters def)
+void WriteJumps()
 {
-	string s = trim(str);
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-	auto ch = charnamemap.find(s);
-	if (ch != charnamemap.end())
-		return ch->second;
-	return def;
+	WriteJump((void*)0x458970, sub_458970); // Level Cutscene Function
+	WriteJump((void*)0x757810, sub_757810); // Somersault Fix 1
+	WriteJump((void*)0x759A18, loc_759A18); // Somersault Fix 2
+	WriteJump((void*)LoadStartPositionPtr, LoadStartPosition_r); // LoadStartPosition replacement
+	WriteJump((void*)0x43DF30, sub_43DF30); // End position
+	WriteJump((void*)Load2PIntroPos, Load2PIntroPos_r); // 2P Intro position
+	WriteJump((void*)0x727E5B, loc_727E5B); // 2P Race Bar
+	WriteJump((void*)0x6C63E7, loc_6C63E7); // Goal Ring
+	WriteJump((void*)0x43C9D0, (void*)0x43CADF); // Tails/Eggman fix
+	WriteJump((void*)0x472A7D, loc_472A7D); // Title Card textures
+	WriteJump((void*)0x43EE5F, loc_43EE5F); // End Level voices
+	//WriteJump((void*)0x532029, loc_532029); // Chao World sounds
+	//WriteJump((void*)0x459236, loc_2800440); // Chao World voices
+	WriteJump((void*)0x72F4D6, KnucklesSunglassesFix);
+	WriteJump((void*)0x72F531, KnucklesAirNecklaceFix);
+	WriteJump((void*)0x744914, EggmanLaserBlasterFix);
+	WriteJump((void*)0x744E02, EggmanLargeCannonFix);
+	WriteJump((void*)0x748168, TailsLaserBlasterFix);
+	WriteJump((void*)0x74861A, TailsBazookaFix);
 }
 
-const string charnames[Characters_Amy] = { "Sonic", "Shadow", "Tails", "Eggman", "Knuckles", "Rouge", "MechTails", "MechEggman" };
+void InitBase()
+{
+	WritePatches();
+	WriteJumps();
+
+	// Fixing animation Info data
+	AnimationInfo* buf = TailsAnimList2;
+	WriteData((AnimationInfo**)0x74CFD7, buf);
+	memcpy(TailsAnimList2, TailsAnimList, TailsAnimList_Length * sizeof(AnimationInfo));
+
+	buf = MechEggmanAnimList2;
+	WriteData((AnimationInfo**)0x740D50, buf);
+	memcpy(MechEggmanAnimList2, MechEggmanAnimList, MechEggmanAnimList_Length * sizeof(AnimationInfo));
+
+	buf = MechTailsAnimList2;
+	WriteData((AnimationInfo**)0x740FB0, buf);
+	memcpy(MechTailsAnimList2, MechTailsAnimList, MechTailsAnimList_Length * sizeof(AnimationInfo));
+
+	buf = ChaoWalkerAnimList2;
+	WriteData((AnimationInfo**)0x7411DC, buf);
+	memcpy(ChaoWalkerAnimList2, ChaoWalkerAnimList, ChaoWalkerAnimList_Length * sizeof(AnimationInfo));
+
+	buf = DarkChaoWalkerAnimList2;
+	WriteData((AnimationInfo**)0x7413BC, buf);
+	memcpy(DarkChaoWalkerAnimList2, DarkChaoWalkerAnimList, DarkChaoWalkerAnimList_Length * sizeof(AnimationInfo));
+
+	buf = EggmanAnimList2;
+	WriteData((AnimationInfo**)0x73C2F2, buf);
+	memcpy(EggmanAnimList2, EggmanAnimList, EggmanAnimList_Length * sizeof(AnimationInfo));
+
+	buf = SonicAnimList2;
+	WriteData((AnimationInfo**)0x716F0A, buf);
+	memcpy(SonicAnimList2, SonicAnimList, SonicAnimList_Length * sizeof(AnimationInfo));
+
+	// Fixing action Lists
+	pair<int, int>* sonic = (pair<int, int>*)0x96EC80;
+	pair<int, int>* amy = (pair<int, int>*)0x96ECD0;
+	pair<int, int>* shadow = (pair<int, int>*)0x96ED18;
+	pair<int, int>* knuckles = (pair<int, int>*)0x96ED58;
+	pair<int, int>* tikal = (pair<int, int>*)0x96EDB8;
+	pair<int, int>* rouge = (pair<int, int>*)0x96EE10;
+	pair<int, int>* chaos = (pair<int, int>*)0x96EE80;
+	pair<int, int>* mecheggman = (pair<int, int>*)0x96EED8;
+	pair<int, int>* darkchaowalker = (pair<int, int>*)0x96EF08;
+	pair<int, int>* mechtails = (pair<int, int>*)0x96EF38;
+	pair<int, int>* chaowalker = (pair<int, int>*)0x96EF68;
+	pair<int, int>* eggman = (pair<int, int>*)0x96EF98;
+	pair<int, int>* tails = (pair<int, int>*)0x96EFA8;
+	{
+		pair<int, int>* order[] = { sonic, shadow, rouge, knuckles, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x7952E5, false);
+	}
+	{
+		pair<int, int>* order[] = { amy, sonic, shadow, rouge, knuckles, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x7952EC, false);
+	}
+	{
+		pair<int, int>* order[] = { shadow, sonic, rouge, knuckles, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x7952F3, false);
+	}
+	{
+		pair<int, int>* order[] = { tails, mechtails, mecheggman, sonic, shadow, rouge, knuckles };
+		actionlistthing(order, (void**)0x7952FA, true);
+	}
+	{
+		pair<int, int>* order[] = { knuckles, rouge, sonic, shadow, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x795301, true);
+	}
+	{
+		pair<int, int>* order[] = { tikal, rouge, knuckles, sonic, shadow, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x795308, true);
+	}
+	{
+		pair<int, int>* order[] = { rouge, knuckles, sonic, shadow, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x79530F, true);
+	}
+	{
+		pair<int, int>* order[] = { chaos, rouge, knuckles, sonic, shadow, mechtails, mecheggman };
+		actionlistthing(order, (void**)0x795316, true);
+	}
+	{
+		pair<int, int>* order[] = { eggman, mecheggman, mechtails, sonic, shadow, rouge, knuckles };
+		actionlistthing(order, (void**)0x79531D, true);
+	}
+	{
+		pair<int, int>* order[] = { mecheggman, mechtails, sonic, shadow, rouge, knuckles };
+		actionlistthing(order, (void**)0x795324, true);
+	}
+	{
+		pair<int, int>* order[] = { darkchaowalker, mecheggman, mechtails, sonic, shadow, rouge, knuckles };
+		actionlistthing(order, (void**)0x79532B, true);
+	}
+	{
+		pair<int, int>* order[] = { chaowalker, mechtails, mecheggman, sonic, shadow, rouge, knuckles };
+		actionlistthing(order, (void**)0x795332, true);
+	}
+	{
+		pair<int, int>* order[] = { mechtails, mecheggman, sonic, shadow, rouge, knuckles };
+		actionlistthing(order, (void**)0x795339, true);
+	}
+
+	WriteCall((void*)0x729D16, Knuckles_LevelBounds_r);
+	WriteCall((void*)0x729DC5, Knuckles_LevelBounds_r);
+	WriteCall((void*)0x72B0F1, Knuckles_LevelBounds_r);
+	WriteCall((void*)0x72B2E8, Knuckles_LevelBounds_r);
+	WriteCall((void*)0x4D45F0, LoadAquaticMineCharAnims_r);
+	WriteCall((void*)0x63D727, LoadDryLagoonCharAnims_r);
+	WriteCall((void*)0x4DB351, LoadCannonsCoreRCharAnims_r);
+	WriteCall((void*)0x65E8F1, LoadCannonsCoreKCharAnims_r);
+	WriteCall((void*)0x65662A, LoadSandOceanCharAnims_r);
+	WriteCall((void*)0x4DDE49, LoadHiddenBaseCharAnims_r);
+	WriteCall((void*)0x4A53AC, LoadEggGolemECharAnims_r);
+}
