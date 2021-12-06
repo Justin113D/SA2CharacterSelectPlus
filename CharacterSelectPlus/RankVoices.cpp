@@ -1,8 +1,4 @@
 #include "stdafx.h"
-#include "SA2ModLoader.h"
-#include "RankVoices.h"
-
-
 
 void PlayRankVoice_i(int id)
 {
