@@ -745,11 +745,11 @@ signed int LoadEndPosition_r(int playerNum)
 		v10 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v3);
 		v4->Position = *v10;
 		v11 = v4->Position.y - 10.0f;
-		*(float*)&MainCharObj2[v1]->field_1A0[5] = v11;
-		MainCharObj2[v1]->field_144[0] = 0;
+		*(float*)&MainCharObj2[v1]->SurfaceInfo.BottomSurfaceDist = v11;
+		MainCharObj2[playerNum]->SomeVectors[0].x = 0;
 		sub_46DC70(v1, &v4->Position, 0);
-		v4->Collision->CollisionArray->field_2 |= 0x70u;
-		*(int*)&MainCharObj2[v1]->gap_70[24] = 0;
+		v4->Collision->CollisionArray->push |= 0x70u;
+		*(int*)&MainCharObj2[v1]->CurrentSurfaceFlags = 0;
 		v8 = v1 & 1;
 		if ((short)CurrentLevel == LevelIDs_LostColony)
 		{
@@ -764,7 +764,7 @@ signed int LoadEndPosition_r(int playerNum)
 	}
 }
 
-void __cdecl sub_43DF30_i(int playerNum)
+void __cdecl SetEndLevelPosition_i(int playerNum)
 {
 	int v1; // edi@1
 	ObjectMaster* v2; // esi@1
@@ -846,8 +846,8 @@ void __cdecl sub_43DF30_i(int playerNum)
 						*((int*) * (&off_1DE95E0 + v1) + 7) = v8;
 						v4->Position = (&v5->Position1P)[v6];
 						v10 = v4->Position.y - 10.0f;
-						*(float*)&MainCharObj2[v1]->field_1A0[5] = v10;
-						MainCharObj2[v1]->field_144[0] = 0;
+						MainCharObj2[v1]->SurfaceInfo.BottomSurfaceDist = v10;
+						MainCharObj2[v1]->SomeVectors[0].x = 0;
 						goto LABEL_27;
 					}
 					++v5;
@@ -863,8 +863,8 @@ void __cdecl sub_43DF30_i(int playerNum)
 		*((int*) * (&off_1DE95E0 + v1) + 7) = 0;
 	LABEL_27:
 		sub_46DC70(v1, &v4->Position, 0);
-		v4->Collision->CollisionArray->field_2 |= 0x70u;
-		*(int*)&MainCharObj2[v1]->gap_70[24] = 0;
+		v4->Collision->CollisionArray->push |= 0x70u;
+		MainCharObj2[v1]->CurrentSurfaceFlags = (SurfaceFlags)0x0;
 		if ((short)CurrentLevel == LevelIDs_RadicalHighway || (short)CurrentLevel == LevelIDs_LostColony)
 			byte_1DE4664[v1 & 1] = 5;
 		else
@@ -872,12 +872,12 @@ void __cdecl sub_43DF30_i(int playerNum)
 	}
 }
 
-__declspec(naked) void sub_43DF30()
+__declspec(naked) void SetEndLevelPosition()
 {
 	__asm
 	{
 		push eax
-		call sub_43DF30_i
+		call SetEndLevelPosition_i
 		add esp, 4
 		retn
 	}
@@ -1056,7 +1056,7 @@ void __cdecl Load2PIntroPos_ri(int playerNum)
 						v8 = &v4->Position;
 						*((int*) * (&off_1DE95E0 + v2) + 7) = v4->Rotation.y;
 						v13 = v4->Position.y - 10.0f;
-						*(float*)&MainCharObj2[v2]->field_1A0[5] = v13;
+						MainCharObj2[v2]->SurfaceInfo.BottomSurfaceDist = v13;
 						goto LABEL_16;
 					}
 					++v5;
@@ -1070,9 +1070,9 @@ void __cdecl Load2PIntroPos_ri(int playerNum)
 		v4->Position.x = 0.0;
 	LABEL_16:
 		sub_46DC70(v2, v8, 0);
-		v4->Collision->CollisionArray->field_2 |= 0x70u;
+		v4->Collision->CollisionArray->push|= 0x70u;
 		v11 = *(char*)0x1DE4660;
-		*(int*)&MainCharObj2[v2]->gap_70[24] = 0;
+		*(int*)&MainCharObj2[v2]->CurrentSurfaceFlags = 0;
 		byte_1DE4664[v2 & 1] = v11;
 		v9 = MainCharObj2[v2];
 		v10 = (int) * (&off_1DE95E0 + v2);
@@ -1960,6 +1960,7 @@ void LoadAnimations(int *character, int playerNum)
 	switch (*character)
 	{
 	case Characters_Sonic:
+	default:
 
 		LoadSonic(playerNum);
 		repcnt = (int)LengthOfArray(SonicAnimReplacements);
@@ -2074,7 +2075,7 @@ void WriteJumps()
 	WriteJump((void*)0x757810, sub_757810); // Somersault Fix 1
 	WriteJump((void*)0x759A18, loc_759A18); // Somersault Fix 2
 	WriteJump((void*)LoadStartPositionPtr, LoadStartPosition_r); // LoadStartPosition replacement
-	WriteJump((void*)0x43DF30, sub_43DF30); // End position
+	WriteJump((void*)0x43DF30, SetEndLevelPosition); // End position
 	WriteJump((void*)Load2PIntroPos, Load2PIntroPos_r); // 2P Intro position
 	WriteJump((void*)0x727E5B, loc_727E5B); // 2P Race Bar
 	WriteJump((void*)0x6C63E7, loc_6C63E7); // Goal Ring
