@@ -1861,6 +1861,8 @@ void LoadSandOceanCharAnims_r()
 {
 	if (CurrentCharacter == Characters_MechEggman)
 		LoadSandOceanCharAnims();
+	else if (CurrentCharacter <= Characters_Shadow && !isSonicTrickMod())
+		LoadEggGolemCharAnims();
 	else
 		LoadSandOcean2PCharAnims();
 }
@@ -1869,6 +1871,8 @@ void LoadHiddenBaseCharAnims_r()
 {
 	if (CurrentCharacter == Characters_MechTails)
 		LoadHiddenBaseCharAnims();
+	else if (CurrentCharacter <= Characters_Shadow && !isSonicTrickMod())
+		LoadEggGolemCharAnims();
 	else
 		LoadSandOcean2PCharAnims();
 }
@@ -2275,6 +2279,7 @@ void InitBase()
 	WriteCall((void*)0x4DB351, LoadCannonsCoreRCharAnims_r);
 	WriteCall((void*)0x65E8F1, LoadCannonsCoreKCharAnims_r);
 	WriteCall((void*)0x65662A, LoadSandOceanCharAnims_r);
-	WriteCall((void*)0x4DDE49, LoadHiddenBaseCharAnims_r);
+	WriteCall((void*)0x4DDE49, LoadHiddenBaseCharAnims_r);	//pyramid race thing
+	WriteCall((void*)0x710476, LoadHiddenBaseCharAnims_r); //hidden base
 	WriteCall((void*)0x4A53AC, LoadEggGolemECharAnims_r);
 }
