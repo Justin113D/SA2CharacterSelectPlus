@@ -45,6 +45,8 @@ DataPointer(float, ToCheck2, 0x025F0268);
 DataPointer(int, ToCheck3, 0x01DEB6A0);
 DataPointer(int, ToCheck4, 0x025F02D4);
 
+DataArray(CharacterSoundBank, stru_1739F58, 0x1739F58, 8);
+
 struct Vertex
 {
 	float X;
@@ -157,6 +159,18 @@ static inline void sub_664DC0(int a1)
 	{
 		mov eax, [a1]
 		call sub_664DC0Ptr
+	}
+}
+
+//void __usercall sub_459010(MLTSoundList* a1@<edi>, CharacterVoiceBank* a2@<esi>)
+static const void* const sub_459010Ptr = (void*)0x459010;
+static inline void sub_459010(MLTSoundList* a1, CharacterVoiceBank* a2)
+{
+	__asm
+	{
+		mov esi, [a2]
+		mov edi, [a1]
+		call sub_459010Ptr
 	}
 }
 #pragma endregion
