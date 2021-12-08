@@ -2007,10 +2007,10 @@ void LoadAnimations(int* character, int playerNum)
 		break;
 	}
 	InitPlayer(playerNum);
-	AnimationInfo* anilst = MainCharObj2[playerNum]->AnimInfo.Animations;
+	/**AnimationInfo* anilst = MainCharObj2[playerNum]->AnimInfo.Animations;
 	for (int i = 0; i < repcnt; i++)
 		if (!CharacterAnimations[anilst[replst[i].key].AnimNum].Animation)
-			anilst[replst[i].key] = anilst[replst[i].value];
+			anilst[replst[i].key] = anilst[replst[i].value];*/
 }
 
 template <size_t N>
@@ -2174,35 +2174,6 @@ void InitBase()
 	WritePatches();
 	WriteJumps();
 
-	// Fixing animation Info data
-	AnimationInfo* buf = TailsAnimList2;
-	WriteData((AnimationInfo**)0x74CFD7, buf);
-	memcpy(TailsAnimList2, TailsAnimList, TailsAnimList_Length * sizeof(AnimationInfo));
-
-	buf = MechEggmanAnimList2;
-	WriteData((AnimationInfo**)0x740D50, buf);
-	memcpy(MechEggmanAnimList2, MechEggmanAnimList, MechEggmanAnimList_Length * sizeof(AnimationInfo));
-
-	buf = MechTailsAnimList2;
-	WriteData((AnimationInfo**)0x740FB0, buf);
-	memcpy(MechTailsAnimList2, MechTailsAnimList, MechTailsAnimList_Length * sizeof(AnimationInfo));
-
-	buf = ChaoWalkerAnimList2;
-	WriteData((AnimationInfo**)0x7411DC, buf);
-	memcpy(ChaoWalkerAnimList2, ChaoWalkerAnimList, ChaoWalkerAnimList_Length * sizeof(AnimationInfo));
-
-	buf = DarkChaoWalkerAnimList2;
-	WriteData((AnimationInfo**)0x7413BC, buf);
-	memcpy(DarkChaoWalkerAnimList2, DarkChaoWalkerAnimList, DarkChaoWalkerAnimList_Length * sizeof(AnimationInfo));
-
-	buf = EggmanAnimList2;
-	WriteData((AnimationInfo**)0x73C2F2, buf);
-	memcpy(EggmanAnimList2, EggmanAnimList, EggmanAnimList_Length * sizeof(AnimationInfo));
-
-	buf = SonicAnimList2;
-	WriteData((AnimationInfo**)0x716F0A, buf);
-	memcpy(SonicAnimList2, SonicAnimList, SonicAnimList_Length * sizeof(AnimationInfo));
-
 	// Fixing action Lists
 	pair<int, int>* sonic = (pair<int, int>*)0x96EC80;
 	pair<int, int>* amy = (pair<int, int>*)0x96ECD0;
@@ -2282,4 +2253,35 @@ void InitBase()
 	WriteCall((void*)0x4DDE49, LoadHiddenBaseCharAnims_r);	//pyramid race thing
 	WriteCall((void*)0x710476, LoadHiddenBaseCharAnims_r); //hidden base
 	WriteCall((void*)0x4A53AC, LoadEggGolemECharAnims_r);
+
+	//Doesn't work
+
+	// Fixing animation Info data 
+	/**AnimationInfo* buf = TailsAnimList2;
+	WriteData((AnimationInfo**)0x74CFD7, buf);
+	memcpy(TailsAnimList2, TailsAnimList, TailsAnimList_Length * sizeof(AnimationInfo));
+
+	buf = MechEggmanAnimList2;
+	WriteData((AnimationInfo**)0x740D50, buf);
+	memcpy(MechEggmanAnimList2, MechEggmanAnimList, MechEggmanAnimList_Length * sizeof(AnimationInfo));
+
+	buf = MechTailsAnimList2;
+	WriteData((AnimationInfo**)0x740FB0, buf);
+	memcpy(MechTailsAnimList2, MechTailsAnimList, MechTailsAnimList_Length * sizeof(AnimationInfo));
+
+	buf = ChaoWalkerAnimList2;
+	WriteData((AnimationInfo**)0x7411DC, buf);
+	memcpy(ChaoWalkerAnimList2, ChaoWalkerAnimList, ChaoWalkerAnimList_Length * sizeof(AnimationInfo));
+
+	buf = DarkChaoWalkerAnimList2;
+	WriteData((AnimationInfo**)0x7413BC, buf);
+	memcpy(DarkChaoWalkerAnimList2, DarkChaoWalkerAnimList, DarkChaoWalkerAnimList_Length * sizeof(AnimationInfo));
+
+	buf = EggmanAnimList2;
+	WriteData((AnimationInfo**)0x73C2F2, buf);
+	memcpy(EggmanAnimList2, EggmanAnimList, EggmanAnimList_Length * sizeof(AnimationInfo));
+
+	buf = SonicAnimList2;
+	WriteData((AnimationInfo**)0x716F0A, buf);
+	memcpy(SonicAnimList2, SonicAnimList, SonicAnimList_Length * sizeof(AnimationInfo));*/
 }
