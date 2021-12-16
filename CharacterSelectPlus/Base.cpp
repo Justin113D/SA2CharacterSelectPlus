@@ -741,15 +741,15 @@ signed int LoadEndPosition_r(int playerNum)
 		v4->Rotation.x = 0;
 		v9 = *(&v5->Mission2YRotation + v3);
 		v4->Rotation.y = v9;
-		*((int*) * (&off_1DE95E0 + v1) + 7) = v9;
+		*((int*)*(&off_1DE95E0 + v1) + 7) = v9;
 		v10 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v3);
 		v4->Position = *v10;
 		v11 = v4->Position.y - 10.0f;
-		*(float*)&MainCharObj2[v1]->field_1A0[5] = v11;
-		MainCharObj2[v1]->field_144[0] = 0;
+		*(float*)&MainCharObj2[v1]->SurfaceInfo.BottomSurfaceDist = v11;
+		MainCharObj2[playerNum]->SomeVectors[0].x = 0;
 		sub_46DC70(v1, &v4->Position, 0);
-		v4->Collision->CollisionArray->field_2 |= 0x70u;
-		*(int*)&MainCharObj2[v1]->gap_70[24] = 0;
+		v4->Collision->CollisionArray->push |= 0x70u;
+		*(int*)&MainCharObj2[v1]->CurrentSurfaceFlags = 0;
 		v8 = v1 & 1;
 		if ((short)CurrentLevel == LevelIDs_LostColony)
 		{
@@ -764,7 +764,7 @@ signed int LoadEndPosition_r(int playerNum)
 	}
 }
 
-void __cdecl sub_43DF30_i(int playerNum)
+void __cdecl SetEndLevelPosition_i(int playerNum)
 {
 	int v1; // edi@1
 	ObjectMaster* v2; // esi@1
@@ -843,11 +843,11 @@ void __cdecl sub_43DF30_i(int playerNum)
 						v4->Rotation.x = 0;
 						v8 = *(&v5->Rotation1P + v6);
 						v4->Rotation.y = v8;
-						*((int*) * (&off_1DE95E0 + v1) + 7) = v8;
+						*((int*)*(&off_1DE95E0 + v1) + 7) = v8;
 						v4->Position = (&v5->Position1P)[v6];
 						v10 = v4->Position.y - 10.0f;
-						*(float*)&MainCharObj2[v1]->field_1A0[5] = v10;
-						MainCharObj2[v1]->field_144[0] = 0;
+						MainCharObj2[v1]->SurfaceInfo.BottomSurfaceDist = v10;
+						MainCharObj2[v1]->SomeVectors[0].x = 0;
 						goto LABEL_27;
 					}
 					++v5;
@@ -860,11 +860,11 @@ void __cdecl sub_43DF30_i(int playerNum)
 		v4->Position.z = 0.0;
 		v4->Position.y = 0.0;
 		v4->Position.x = 0.0;
-		*((int*) * (&off_1DE95E0 + v1) + 7) = 0;
+		*((int*)*(&off_1DE95E0 + v1) + 7) = 0;
 	LABEL_27:
 		sub_46DC70(v1, &v4->Position, 0);
-		v4->Collision->CollisionArray->field_2 |= 0x70u;
-		*(int*)&MainCharObj2[v1]->gap_70[24] = 0;
+		v4->Collision->CollisionArray->push |= 0x70u;
+		MainCharObj2[v1]->CurrentSurfaceFlags = (SurfaceFlags)0x0;
 		if ((short)CurrentLevel == LevelIDs_RadicalHighway || (short)CurrentLevel == LevelIDs_LostColony)
 			byte_1DE4664[v1 & 1] = 5;
 		else
@@ -872,12 +872,12 @@ void __cdecl sub_43DF30_i(int playerNum)
 	}
 }
 
-__declspec(naked) void sub_43DF30()
+__declspec(naked) void SetEndLevelPosition()
 {
 	__asm
 	{
 		push eax
-		call sub_43DF30_i
+		call SetEndLevelPosition_i
 		add esp, 4
 		retn
 	}
@@ -1054,9 +1054,9 @@ void __cdecl Load2PIntroPos_ri(int playerNum)
 						v12 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v6);
 						v4->Position = *v12;
 						v8 = &v4->Position;
-						*((int*) * (&off_1DE95E0 + v2) + 7) = v4->Rotation.y;
+						*((int*)*(&off_1DE95E0 + v2) + 7) = v4->Rotation.y;
 						v13 = v4->Position.y - 10.0f;
-						*(float*)&MainCharObj2[v2]->field_1A0[5] = v13;
+						MainCharObj2[v2]->SurfaceInfo.BottomSurfaceDist = v13;
 						goto LABEL_16;
 					}
 					++v5;
@@ -1070,12 +1070,12 @@ void __cdecl Load2PIntroPos_ri(int playerNum)
 		v4->Position.x = 0.0;
 	LABEL_16:
 		sub_46DC70(v2, v8, 0);
-		v4->Collision->CollisionArray->field_2 |= 0x70u;
+		v4->Collision->CollisionArray->push |= 0x70u;
 		v11 = *(char*)0x1DE4660;
-		*(int*)&MainCharObj2[v2]->gap_70[24] = 0;
+		*(int*)&MainCharObj2[v2]->CurrentSurfaceFlags = 0;
 		byte_1DE4664[v2 & 1] = v11;
 		v9 = MainCharObj2[v2];
-		v10 = (int) * (&off_1DE95E0 + v2);
+		v10 = (int)*(&off_1DE95E0 + v2);
 		if (v9)
 		{
 			v9->Speed.x = 0.0;
@@ -1861,6 +1861,8 @@ void LoadSandOceanCharAnims_r()
 {
 	if (CurrentCharacter == Characters_MechEggman)
 		LoadSandOceanCharAnims();
+	else if (CurrentCharacter <= Characters_Shadow && !isSonicTrickMod())
+		LoadEggGolemCharAnims();
 	else
 		LoadSandOcean2PCharAnims();
 }
@@ -1869,6 +1871,8 @@ void LoadHiddenBaseCharAnims_r()
 {
 	if (CurrentCharacter == Characters_MechTails)
 		LoadHiddenBaseCharAnims();
+	else if (CurrentCharacter <= Characters_Shadow && !isSonicTrickMod())
+		LoadEggGolemCharAnims();
 	else
 		LoadSandOcean2PCharAnims();
 }
@@ -1953,13 +1957,14 @@ pair<short, short> MechAnimReplacements[] = {
 
 pair<int, int> listend = { -1, 0 };
 
-void LoadAnimations(int *character, int playerNum)
+void LoadAnimations(int* character, int playerNum)
 {
 	int repcnt;
 	pair<short, short>* replst;
 	switch (*character)
 	{
 	case Characters_Sonic:
+	default:
 
 		LoadSonic(playerNum);
 		repcnt = (int)LengthOfArray(SonicAnimReplacements);
@@ -2034,15 +2039,88 @@ void actionlistthing(pair<int, int>* (&order)[N], void** ptr, bool skipmagichand
 
 #pragma endregion
 
+void LoadCharacterSoundBanks_r(int curChar, MLTSoundList* mltSoundList, MLTSoundList* a1)
+{
+	if (curChar != Characters_Tails && curChar != Characters_Eggman)
+	{
+		LoadCharacterSoundBanks(curChar, mltSoundList, a1);
+		return;
+	}
+
+	CharacterSoundBank* SoundBank;
+	char i; 
+	CharacterVoiceBank* soundBank2; 
+	char k; 
+	const char* v14; 
+
+	SoundBank = stru_1739F58;
+
+	for (i = 0; i < 10; ++i)
+	{
+		if ((SoundBank->Character) == curChar)
+		{
+			break;
+		}
+		++SoundBank;
+	}
+	if (i == 10)
+	{
+		SoundBank = stru_1739F58;
+	}
+
+	soundBank2 = stru_173A018;
+	for (k = 0; k < 10; ++k)
+	{
+		if (soundBank2->Character == curChar)
+		{
+			break;
+		}
+		++soundBank2;
+	}
+	if (k == 10)
+	{
+		soundBank2 = stru_173A018;
+	}
+
+	v14 = SoundBank->Name;
+	if (v14)
+	{
+		LoadMLT(v14);
+	}
+	mltSoundList->Size = (int)SoundBank->SoundList;
+	sub_459010(a1, soundBank2);
+}
+
+static void __declspec(naked) LoadCharacterSoundBanksASM()
+{
+	__asm
+	{
+		push[esp + 08h] // a1
+		push[esp + 08h] // mltSoundList
+		push ebx // curChar
+
+		// Call your __cdecl function here:
+		call LoadCharacterSoundBanks_r
+
+		pop ebx // curChar
+		add esp, 4 // mltSoundList
+		add esp, 4 // a1
+		retn
+	}
+}
+
 void WritePatches()
 {
+	//fix Tails and Eggman mechless wrong sound bank
+	WriteCall((void*)0x438B37, LoadCharacterSoundBanksASM);
+
 	unsigned __int8 twobytenop[] = { 0x66, 0x90 };
 	unsigned __int8 fivebytenop[] = { 0x66, 0x90, 0x66, 0x90, 0x90 };
 	unsigned __int8 shortjmp[] = { 0xEB };
 
-	WriteData((void*)0x44E63B, twobytenop); // Dark Chao Walker Life Icon Patch
 	WriteData((void*)0x459110, twobytenop); // 2P Sound Effects Patch
 	WriteData((void*)0x45913B, twobytenop); // 2P Voice Patch
+	WriteData((void*)0x44E63B, twobytenop); // Dark Chao Walker Life Icon Patch
 	WriteData((void*)0x4CD255, twobytenop); // Sonic's Cannon's Core Control Patch
 	WriteData((void*)0x724261, shortjmp); // Sonic Boss Special Patch
 	WriteData((void*)0x736211, shortjmp); // Knuckles Boss Special Patch
@@ -2074,7 +2152,7 @@ void WriteJumps()
 	WriteJump((void*)0x757810, sub_757810); // Somersault Fix 1
 	WriteJump((void*)0x759A18, loc_759A18); // Somersault Fix 2
 	WriteJump((void*)LoadStartPositionPtr, LoadStartPosition_r); // LoadStartPosition replacement
-	WriteJump((void*)0x43DF30, sub_43DF30); // End position
+	WriteJump((void*)0x43DF30, SetEndLevelPosition); // End position
 	WriteJump((void*)Load2PIntroPos, Load2PIntroPos_r); // 2P Intro position
 	WriteJump((void*)0x727E5B, loc_727E5B); // 2P Race Bar
 	WriteJump((void*)0x6C63E7, loc_6C63E7); // Goal Ring
@@ -2201,6 +2279,7 @@ void InitBase()
 	WriteCall((void*)0x4DB351, LoadCannonsCoreRCharAnims_r);
 	WriteCall((void*)0x65E8F1, LoadCannonsCoreKCharAnims_r);
 	WriteCall((void*)0x65662A, LoadSandOceanCharAnims_r);
-	WriteCall((void*)0x4DDE49, LoadHiddenBaseCharAnims_r);
+	WriteCall((void*)0x4DDE49, LoadHiddenBaseCharAnims_r);	//pyramid race thing
+	WriteCall((void*)0x710476, LoadHiddenBaseCharAnims_r); //hidden base
 	WriteCall((void*)0x4A53AC, LoadEggGolemECharAnims_r);
 }
