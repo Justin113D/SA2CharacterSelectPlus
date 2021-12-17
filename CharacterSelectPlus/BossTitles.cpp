@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include "SA2ModLoader.h"
-#include "BossTitles.h"
 
 DataPointer(BossTitleData, KnucklesBossTitle, 0xDCF434);
 DataPointer(BossTitleData, RougeBossTitle, 0xDCF530);
