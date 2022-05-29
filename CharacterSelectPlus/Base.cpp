@@ -1780,45 +1780,46 @@ void LoadEmeraldManager_r_wrapper()
 #pragma endregion
 #pragma region LevelBounds
 
-static const void* const Knuckles_LevelBounds_o = (void*)0x737B50;
-__declspec(naked) void Knuckles_LevelBounds_r()
+static Trampoline* Knuckles_LevelBounds_t = nullptr;
+
+static inline bool Knuckles_LevelBounds_origin(EntityData1* a1, KnucklesCharObj2* a2)
+{
+	auto target = Knuckles_LevelBounds_t->Target();
+
+	bool result;
+	__asm
+	{
+		mov ecx, [a2]
+		mov eax, [a1]
+		call target
+		mov result, al
+	}
+	return result;
+}
+
+bool Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
+{	
+	for (uint8_t i = 0; i < StageSelectLevels_Length; i++)
+	{
+		if ( (CurrentLevel == StageSelectLevels[i].Level) && (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge))
+		{
+			return Knuckles_LevelBounds_origin(a1, a2);
+		}
+	}
+
+	return 0;
+}
+
+static void __declspec(naked) Knuckles_LevelBounds_ASM()
 {
 	__asm
 	{
-		mov	ebx, [CurrentLevel]
-		mov ebx, [ebx]
-		cmp	bx, LevelIDs_PumpkinHill
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_AquaticMine
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_SecurityHall
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_WildCanyon
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DryLagoon
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DeathChamber
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_EggQuarters
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_MeteorHerd
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_WildCanyon2P
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_MadSpace
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DryLagoon2P
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_PoolQuest
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_PlanetQuest
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DeathChamber2P
-		je	j_Knuckles_LevelBounds
-		xor eax, eax
+		push ecx 
+		push eax 
+		call Knuckles_LevelBounds_r
+		add esp, 4 
+		pop ecx 
 		retn
-		j_Knuckles_LevelBounds :
-		jmp[Knuckles_LevelBounds_o]
 	}
 }
 
@@ -2241,10 +2242,14 @@ void InitBase()
 		actionlistthing(order, (void**)0x795339, true);
 	}
 
-	WriteCall((void*)0x729D16, Knuckles_LevelBounds_r);
+	/*/WriteCall((void*)0x729D16, Knuckles_LevelBounds_r);
 	WriteCall((void*)0x729DC5, Knuckles_LevelBounds_r);
 	WriteCall((void*)0x72B0F1, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x72B2E8, Knuckles_LevelBounds_r);
+	WriteCall((void*)0x72B2E8, Knuckles_LevelBounds_r);*/
+	
+	//WriteJump((void*)0x737B50, Knuckles_LevelBounds_ASM);
+	Knuckles_LevelBounds_t = new Trampoline((int)0x737B50, (int)0x737B5A, Knuckles_LevelBounds_ASM);
+
 	WriteCall((void*)0x4D45F0, LoadAquaticMineCharAnims_r);
 	WriteCall((void*)0x63D727, LoadDryLagoonCharAnims_r);
 	WriteCall((void*)0x4DB351, LoadCannonsCoreRCharAnims_r);
