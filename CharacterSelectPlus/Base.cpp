@@ -2139,6 +2139,8 @@ void WriteJumps()
 	WriteJump((void*)0x744E02, EggmanLargeCannonFix);
 	WriteJump((void*)0x748168, TailsLaserBlasterFix);
 	WriteJump((void*)0x74861A, TailsBazookaFix);
+
+	WriteJump((void*)0x6c63de, (void*)0x6c6431); //fix goal ring for the hunters
 }
 
 void InitBase()
@@ -2213,12 +2215,8 @@ void InitBase()
 		actionlistthing(order, (void**)0x795339, true);
 	}
 
-	/*/WriteCall((void*)0x729D16, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x729DC5, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x72B0F1, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x72B2E8, Knuckles_LevelBounds_r);*/
 
-	//WriteJump((void*)0x737B50, Knuckles_LevelBounds_ASM);
+
 	Knuckles_LevelBounds_t = new Trampoline((int)0x737B50, (int)0x737B5A, Knuckles_LevelBounds_ASM);
 	GoalRing_t = new Trampoline((int)GoalRing_Main, (int)GoalRing_Main + 0x6, GoalRing_Main_r);
 
