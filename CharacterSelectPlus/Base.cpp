@@ -2127,6 +2127,7 @@ void WriteJumps()
 	WriteJump((void*)Load2PIntroPos, Load2PIntroPos_r); // 2P Intro position
 	WriteJump((void*)0x727E5B, loc_727E5B); // 2P Race Bar
 
+	WriteJump((void*)0x6cff40, (void*)0x6cff83); //make all knux pieces always grabbable
 
 	WriteJump((void*)0x43C9D0, (void*)0x43CADF); // Tails/Eggman fix
 	WriteJump((void*)0x472A7D, loc_472A7D); // Title Card textures
