@@ -2217,7 +2217,6 @@ void InitBase()
 	}
 
 
-
 	Knuckles_LevelBounds_t = new Trampoline((int)0x737B50, (int)0x737B5A, Knuckles_LevelBounds_ASM);
 	GoalRing_t = new Trampoline((int)GoalRing_Main, (int)GoalRing_Main + 0x6, GoalRing_Main_r);
 
