@@ -11,6 +11,8 @@ using std::string;
 using std::unordered_map;
 using std::transform;
 
+static Trampoline* GoalRing_t = nullptr;
+
 #pragma region Cutscene stuff
 
 LevelCutscene* const stru_173A808 = (LevelCutscene*)0x173A808;
@@ -1178,64 +1180,32 @@ __declspec(naked) void loc_727E5B()
 #pragma endregion
 #pragma region Goal Ring
 
-static const void* const loc_6C6431 = (void*)0x6C6431;
-static const void* const loc_6C6412 = (void*)0x6C6412;
-__declspec(naked) void loc_6C63E7()
+void GoalRing_Main_r(ObjectMaster* obj)
 {
-	__asm
-	{
-		mov eax, MissionNum
-		cmp	long ptr[eax], 1
-		je	_loc_6C6412
-		mov	eax, [ebp + 8]
-		cdq
-		mov	esi, 3
-		idiv	esi
-		cmp	edx, 1
-		je _loc_6C6431
-		mov	eax, CurrentLevel
-		mov eax, [eax]
-		cmp	ax, LevelIDs_PumpkinHill
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_AquaticMine
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_SecurityHall
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_WildCanyon
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_DryLagoon
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_DeathChamber
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_EggQuarters
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_MeteorHerd
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_WildCanyon2P
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_MadSpace
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_DryLagoon2P
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_PoolQuest
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_PlanetQuest
-		je	short loc_6C659A
-		cmp	ax, LevelIDs_DeathChamber2P
-		jne	_loc_6C6431
+	EntityData1* data = obj->Data1.Entity;
 
-		loc_6C659A :
-		pop	esi
-			pop	ebp
-			pop	ebx
-			retn
-			_loc_6C6412 :
-		mov ecx, 2
-			jmp loc_6C6412
-			_loc_6C6431 :
-		mov ecx, 2
-			jmp[loc_6C6431]
+	for (uint8_t i = 0; i < StageSelectLevels_Length; i++)
+	{
+		if ((CurrentLevel == StageSelectLevels[i].Level) && (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge))
+		{
+			if (MissionNum == 1)
+			{
+				data->Rotation.x = 2;
+				data->Action = 1;
+				if (!MainCharObj1[0] || MainCharObj1[0]->Timer < 120u)
+				{
+					return;
+				}
+			}
+			else if (data->Rotation.x % 3 != 1)
+			{
+				return;
+			}
+		}
 	}
+
+	ObjectFunc(origin, GoalRing_t->Target());
+	origin(obj);
 }
 
 #pragma endregion
@@ -1778,51 +1748,54 @@ void LoadEmeraldManager_r_wrapper()
 }
 
 #pragma endregion
-#pragma region LevelBounds
 
-static const void* const Knuckles_LevelBounds_o = (void*)0x737B50;
-__declspec(naked) void Knuckles_LevelBounds_r()
+Trampoline* Knuckles_LevelBounds_t = nullptr;
+
+static inline int Knuckles_LevelBounds_origin(EntityData1* a1, KnucklesCharObj2* a2)
+{
+	auto target = Knuckles_LevelBounds_t->Target();
+
+	int result;
+	__asm
+	{
+		mov ecx, [a2]
+		mov eax, [a1]
+		call target
+		mov result, eax
+	}
+	return result;
+}
+
+int Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
+{
+	for (uint8_t i = 0; i < StageSelectLevels_Length ; i++)
+	{
+		if ((CurrentLevel == StageSelectLevels[i].Level))
+		{
+			if (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge) {
+
+				return Knuckles_LevelBounds_origin(a1, a2);
+			}
+		}
+	}
+
+	return 0;
+}
+
+static void __declspec(naked) Knuckles_LevelBounds_ASM()
 {
 	__asm
 	{
-		mov	ebx, [CurrentLevel]
-		mov ebx, [ebx]
-		cmp	bx, LevelIDs_PumpkinHill
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_AquaticMine
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_SecurityHall
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_WildCanyon
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DryLagoon
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DeathChamber
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_EggQuarters
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_MeteorHerd
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_WildCanyon2P
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_MadSpace
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DryLagoon2P
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_PoolQuest
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_PlanetQuest
-		je	j_Knuckles_LevelBounds
-		cmp	bx, LevelIDs_DeathChamber2P
-		je	j_Knuckles_LevelBounds
-		xor eax, eax
+		push ecx
+		push eax
+		call Knuckles_LevelBounds_r
+		add esp, 4
+		pop ecx
 		retn
-		j_Knuckles_LevelBounds :
-		jmp[Knuckles_LevelBounds_o]
 	}
 }
 
-#pragma endregion
+
 #pragma region Animation Loaders
 
 void LoadAquaticMineCharAnims_r()
@@ -2007,10 +1980,10 @@ void LoadAnimations(int* character, int playerNum)
 		break;
 	}
 	InitPlayer(playerNum);
-	AnimationInfo* anilst = MainCharObj2[playerNum]->AnimInfo.Animations;
+	/**AnimationInfo* anilst = MainCharObj2[playerNum]->AnimInfo.Animations;
 	for (int i = 0; i < repcnt; i++)
 		if (!CharacterAnimations[anilst[replst[i].key].AnimNum].Animation)
-			anilst[replst[i].key] = anilst[replst[i].value];
+			anilst[replst[i].key] = anilst[replst[i].value];*/
 }
 
 template <size_t N>
@@ -2048,10 +2021,10 @@ void LoadCharacterSoundBanks_r(int curChar, MLTSoundList* mltSoundList, MLTSound
 	}
 
 	CharacterSoundBank* SoundBank;
-	char i; 
-	CharacterVoiceBank* soundBank2; 
-	char k; 
-	const char* v14; 
+	char i;
+	CharacterVoiceBank* soundBank2;
+	char k;
+	const char* v14;
 
 	SoundBank = stru_1739F58;
 
@@ -2155,7 +2128,9 @@ void WriteJumps()
 	WriteJump((void*)0x43DF30, SetEndLevelPosition); // End position
 	WriteJump((void*)Load2PIntroPos, Load2PIntroPos_r); // 2P Intro position
 	WriteJump((void*)0x727E5B, loc_727E5B); // 2P Race Bar
-	WriteJump((void*)0x6C63E7, loc_6C63E7); // Goal Ring
+
+	WriteJump((void*)0x6cff40, (void*)0x6cff83); //make all knux pieces always grabbable
+
 	WriteJump((void*)0x43C9D0, (void*)0x43CADF); // Tails/Eggman fix
 	WriteJump((void*)0x472A7D, loc_472A7D); // Title Card textures
 	WriteJump((void*)0x43EE5F, loc_43EE5F); // End Level voices
@@ -2167,41 +2142,14 @@ void WriteJumps()
 	WriteJump((void*)0x744E02, EggmanLargeCannonFix);
 	WriteJump((void*)0x748168, TailsLaserBlasterFix);
 	WriteJump((void*)0x74861A, TailsBazookaFix);
+
+	WriteJump((void*)0x6c63de, (void*)0x6c6431); //fix goal ring for the hunters
 }
 
 void InitBase()
 {
 	WritePatches();
 	WriteJumps();
-
-	// Fixing animation Info data
-	AnimationInfo* buf = TailsAnimList2;
-	WriteData((AnimationInfo**)0x74CFD7, buf);
-	memcpy(TailsAnimList2, TailsAnimList, TailsAnimList_Length * sizeof(AnimationInfo));
-
-	buf = MechEggmanAnimList2;
-	WriteData((AnimationInfo**)0x740D50, buf);
-	memcpy(MechEggmanAnimList2, MechEggmanAnimList, MechEggmanAnimList_Length * sizeof(AnimationInfo));
-
-	buf = MechTailsAnimList2;
-	WriteData((AnimationInfo**)0x740FB0, buf);
-	memcpy(MechTailsAnimList2, MechTailsAnimList, MechTailsAnimList_Length * sizeof(AnimationInfo));
-
-	buf = ChaoWalkerAnimList2;
-	WriteData((AnimationInfo**)0x7411DC, buf);
-	memcpy(ChaoWalkerAnimList2, ChaoWalkerAnimList, ChaoWalkerAnimList_Length * sizeof(AnimationInfo));
-
-	buf = DarkChaoWalkerAnimList2;
-	WriteData((AnimationInfo**)0x7413BC, buf);
-	memcpy(DarkChaoWalkerAnimList2, DarkChaoWalkerAnimList, DarkChaoWalkerAnimList_Length * sizeof(AnimationInfo));
-
-	buf = EggmanAnimList2;
-	WriteData((AnimationInfo**)0x73C2F2, buf);
-	memcpy(EggmanAnimList2, EggmanAnimList, EggmanAnimList_Length * sizeof(AnimationInfo));
-
-	buf = SonicAnimList2;
-	WriteData((AnimationInfo**)0x716F0A, buf);
-	memcpy(SonicAnimList2, SonicAnimList, SonicAnimList_Length * sizeof(AnimationInfo));
 
 	// Fixing action Lists
 	pair<int, int>* sonic = (pair<int, int>*)0x96EC80;
@@ -2270,10 +2218,10 @@ void InitBase()
 		actionlistthing(order, (void**)0x795339, true);
 	}
 
-	WriteCall((void*)0x729D16, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x729DC5, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x72B0F1, Knuckles_LevelBounds_r);
-	WriteCall((void*)0x72B2E8, Knuckles_LevelBounds_r);
+
+	Knuckles_LevelBounds_t = new Trampoline((int)0x737B50, (int)0x737B5A, Knuckles_LevelBounds_ASM);
+	GoalRing_t = new Trampoline((int)GoalRing_Main, (int)GoalRing_Main + 0x6, GoalRing_Main_r);
+
 	WriteCall((void*)0x4D45F0, LoadAquaticMineCharAnims_r);
 	WriteCall((void*)0x63D727, LoadDryLagoonCharAnims_r);
 	WriteCall((void*)0x4DB351, LoadCannonsCoreRCharAnims_r);

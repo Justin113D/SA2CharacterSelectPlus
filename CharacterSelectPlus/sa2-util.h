@@ -47,6 +47,8 @@ DataPointer(int, ToCheck4, 0x025F02D4);
 
 DataArray(CharacterSoundBank, stru_1739F58, 0x1739F58, 8);
 
+DataPointer(NJS_TEXLIST, StageMap_Texlist, 0xC68B68);
+
 struct Vertex
 {
 	float X;
