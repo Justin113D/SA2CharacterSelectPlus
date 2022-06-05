@@ -1748,32 +1748,34 @@ void LoadEmeraldManager_r_wrapper()
 }
 
 #pragma endregion
-#pragma region LevelBounds
 
-static Trampoline* Knuckles_LevelBounds_t = nullptr;
+Trampoline* Knuckles_LevelBounds_t = nullptr;
 
-static inline bool Knuckles_LevelBounds_origin(EntityData1* a1, KnucklesCharObj2* a2)
+static inline int Knuckles_LevelBounds_origin(EntityData1* a1, KnucklesCharObj2* a2)
 {
 	auto target = Knuckles_LevelBounds_t->Target();
 
-	bool result;
+	int result;
 	__asm
 	{
 		mov ecx, [a2]
 		mov eax, [a1]
 		call target
-		mov result, al
+		mov result, eax
 	}
 	return result;
 }
 
-bool Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
+int Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
 {
-	for (uint8_t i = 0; i < StageSelectLevels_Length; i++)
+	for (uint8_t i = 0; i < StageSelectLevels_Length ; i++)
 	{
-		if ((CurrentLevel == StageSelectLevels[i].Level) && (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge))
+		if ((CurrentLevel == StageSelectLevels[i].Level))
 		{
-			return Knuckles_LevelBounds_origin(a1, a2);
+			if (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge) {
+
+				return Knuckles_LevelBounds_origin(a1, a2);
+			}
 		}
 	}
 
@@ -1793,7 +1795,7 @@ static void __declspec(naked) Knuckles_LevelBounds_ASM()
 	}
 }
 
-#pragma endregion
+
 #pragma region Animation Loaders
 
 void LoadAquaticMineCharAnims_r()
