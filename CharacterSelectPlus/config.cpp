@@ -5,6 +5,7 @@
 
 using std::string;
 using std::unordered_map;
+bool customSet = true;
 
 
 #pragma region mod setting stuff
@@ -69,6 +70,8 @@ void init_Config(const char* path)
 		defaultcharacters2palt[i] = ParseCharacterID(settings->getString("2Player", charnamesalt[i]), (Characters)(i | altcharacter));
 	for (int i = 0; i < Characters_Amy; i++)
 		bosscharacters[i] = ParseCharacterID(settings->getString("Boss", charnames[i]), (Characters)i);
+
+	customSet = settings->getBool("Misc", "customSet", true);
 
 	delete settings;
 
