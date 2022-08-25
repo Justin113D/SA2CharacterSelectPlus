@@ -987,109 +987,103 @@ LevelEndPosition* Rouge2PIntroList[] = { Rouge2PIntro, Knuckles2PIntro, Shadow2P
 
 void __cdecl Load2PIntroPos_ri(int playerNum)
 {
-	ObjectMaster* v1; // eax@1
-	int v2; // edi@1
-	CharObj2Base* v3; // eax@2
-	EntityData1* v4; // esi@2
 	LevelEndPosition** list;
 	LevelEndPosition* v5; // eax@4
 	bool v6; // edx@11
 	NJS_VECTOR* v8; // ecx@15
-	CharObj2Base* v9; // eax@16
 	int v10; // edi@16
 	char v11; // al@16
 	NJS_VECTOR* v12; // eax@20
 	float v13; // ST10_4@20
 
-	v2 = playerNum;
-	v1 = MainCharacter[playerNum];
-	if (v1)
+	auto pNum = playerNum;
+	auto p = MainCharacter[playerNum];
+
+	if (!p)
+		return;
+
+	auto pData = p->Data1.Entity;
+	auto co2 = MainCharObj2[playerNum];
+
+	if (co2)
 	{
-		v4 = v1->Data1.Entity;
-		v3 = MainCharObj2[v2];
-		if (v3)
+		switch (co2->CharID)
 		{
-			switch (v3->CharID)
-			{
-			case Characters_Sonic:
-			case Characters_Tails:
-			case Characters_SuperSonic:
-				list = Sonic2PIntroList;
-				break;
-			case Characters_Shadow:
-			case Characters_Eggman:
-			case Characters_SuperShadow:
-				list = Shadow2PIntroList;
-				break;
-			case Characters_Knuckles:
-				list = Knuckles2PIntroList;
-				break;
-			case Characters_Rouge:
-				list = Rouge2PIntroList;
-				break;
-			case Characters_MechEggman:
-				list = MechEggman2PIntroList;
-				break;
-			case Characters_MechTails:
-				list = MechTails2PIntroList;
-				break;
-			default:
-				goto LABEL_10;
-			}
+		case Characters_Sonic:
+		case Characters_Tails:
+		case Characters_SuperSonic:
+			list = Sonic2PIntroList;
+			break;
+		case Characters_Shadow:
+		case Characters_Eggman:
+		case Characters_SuperShadow:
+			list = Shadow2PIntroList;
+			break;
+		case Characters_Knuckles:
+			list = Knuckles2PIntroList;
+			break;
+		case Characters_Rouge:
+			list = Rouge2PIntroList;
+			break;
+		case Characters_MechEggman:
+			list = MechEggman2PIntroList;
+			break;
+		case Characters_MechTails:
+			list = MechTails2PIntroList;
+			break;
+		default:
+			goto LABEL_10;
 		}
-		else
+	}
+	else
+	{
+	LABEL_10:
+		list = 0;
+	}
+	v6 = pNum != 0;
+	if (list)
+	{
+		for (int i = 0; i < (int)LengthOfArray(Sonic2PIntroList); i++)
 		{
-		LABEL_10:
-			list = 0;
-		}
-		v6 = v2 != 0;
-		if (list)
-		{
-			for (int i = 0; i < (int)LengthOfArray(Sonic2PIntroList); i++)
+			v5 = list[i];
+			while (v5->Level != LevelIDs_Invalid)
 			{
-				v5 = list[i];
-				while (v5->Level != LevelIDs_Invalid)
+				if (v5->Level == (short)CurrentLevel)
 				{
-					if (v5->Level == (short)CurrentLevel)
-					{
-						v4->Rotation.y = *(&v5->Mission2YRotation + v6);
-						v12 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v6);
-						v4->Position = *v12;
-						v8 = &v4->Position;
-						*((int*)*(&off_1DE95E0 + v2) + 7) = v4->Rotation.y;
-						v13 = v4->Position.y - 10.0f;
-						MainCharObj2[v2]->SurfaceInfo.BottomSurfaceDist = v13;
-						goto LABEL_16;
-					}
-					++v5;
+					pData->Rotation.y = *(&v5->Mission2YRotation + v6);
+					v12 = (NJS_VECTOR*)((char*)&v5->Mission2Position + 12 * v6);
+					pData->Position = *v12;
+					v8 = &pData->Position;
+					*((int*)*(&off_1DE95E0 + pNum) + 7) = pData->Rotation.y;
+					v13 = pData->Position.y - 10.0f;
+					MainCharObj2[pNum]->SurfaceInfo.BottomSurfaceDist = v13;
+					goto LABEL_16;
 				}
+				++v5;
 			}
 		}
-		v4->Position.z = 0.0;
-		v8 = &v4->Position;
-		v4->Position.y = 0.0;
-		v4->Rotation.y = 0;
-		v4->Position.x = 0.0;
-	LABEL_16:
-		sub_46DC70(v2, v8, 0);
-		v4->Collision->CollisionArray->push |= 0x70u;
-		v11 = *(char*)0x1DE4660;
-		*(int*)&MainCharObj2[v2]->CurrentSurfaceFlags = 0;
-		byte_1DE4664[v2 & 1] = v11;
-		v9 = MainCharObj2[v2];
-		v10 = (int)*(&off_1DE95E0 + v2);
-		if (v9)
-		{
-			v9->Speed.x = 0.0;
-			v9->Speed.y = 0.0;
-			v9->Speed.z = 0.0;
-		}
-		if (v10)
-		{
-			*(float*)(v10 + 8) = 0.0;
-			*(float*)(v10 + 4) = 0.0;
-			*(float*)v10 = 0.0;
-		}
+	}
+	pData->Position.z = 0.0;
+	v8 = &pData->Position;
+	pData->Position = { 0.0f, 0.0f, 0.0f };
+
+LABEL_16:
+	sub_46DC70(pNum, v8, 0);
+	pData->Collision->CollisionArray->push |= 0x70u;
+	v11 = *(char*)0x1DE4660;
+	*(int*)&MainCharObj2[pNum]->CurrentSurfaceFlags = 0;
+	byte_1DE4664[pNum & 1] = v11;
+
+	v10 = (int)*(&off_1DE95E0 + pNum);
+	if (co2)
+	{
+		co2->Speed = { 0.0f, 0.0f, 0.0f };
+	}
+	if (v10)
+	{
+		*(float*)(v10 + 8) = 0.0f;
+		*(float*)(v10 + 4) = 0.0f;
+		*(float*)v10 = 0.0f;
 	}
 }
 
@@ -1768,7 +1762,7 @@ static inline int Knuckles_LevelBounds_origin(EntityData1* a1, KnucklesCharObj2*
 
 int Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
 {
-	for (uint8_t i = 0; i < StageSelectLevels_Length ; i++)
+	for (uint8_t i = 0; i < StageSelectLevels_Length; i++)
 	{
 		if ((CurrentLevel == StageSelectLevels[i].Level))
 		{
