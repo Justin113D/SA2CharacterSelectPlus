@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include <stdio.h>
-#include <cstdio>
 #include <array>
 #include <algorithm>
 #include <cmath>

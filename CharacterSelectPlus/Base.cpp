@@ -766,27 +766,27 @@ signed int LoadEndPosition_r(int playerNum)
 	}
 }
 
-void __cdecl SetEndLevelPosition_i(int playerNum)
+void __cdecl SetEndLevelPosition_i(int pNum)
 {
-	int v1; // edi@1
-	ObjectMaster* v2; // esi@1
-	CharObj2Base* v3; // eax@3
-	EntityData1* v4; // esi@3
-	StartPosition** list;
-	StartPosition* v5; // eax@5
-	int v6; // edx@20
-	int v8; // ecx@30
-	float v10; // ST14_4@30
+	StartPosition** list = 0;
+	StartPosition* v5 = 0;
+	int v6 = 0;
+	int v8 = 0;
+	float posDif = 0.0f;
 
-	v1 = playerNum;
-	v2 = MainCharacter[playerNum];
-	if (v2 && LoadEndPosition_r(playerNum) != 1)
+	auto player = MainCharacter[pNum];
+
+	if (!player)
+		return;
+
+	auto co2 = MainCharObj2[pNum];
+	auto pData = player->Data1.Entity;
+
+	if (LoadEndPosition_r(pNum) != 1)
 	{
-		v3 = MainCharObj2[v1];
-		v4 = v2->Data1.Entity;
-		if (v3)
+		if (co2)
 		{
-			switch (v3->CharID)
+			switch (co2->CharID)
 			{
 			case Characters_Sonic:
 			case Characters_Tails:
@@ -829,7 +829,7 @@ void __cdecl SetEndLevelPosition_i(int playerNum)
 			|| (short)CurrentLevel == LevelIDs_TailsVsEggman1
 			|| (short)CurrentLevel == LevelIDs_TailsVsEggman2
 			|| (short)CurrentLevel == LevelIDs_KnucklesVsRouge)
-			v6 = (v1 != 0) + 1;
+			v6 = (pNum != 0) + 1;
 		else
 			v6 = 0;
 		if (list)
@@ -841,36 +841,34 @@ void __cdecl SetEndLevelPosition_i(int playerNum)
 				{
 					if (v5->Level == (short)CurrentLevel)
 					{
-						v4->Rotation.z = 0;
-						v4->Rotation.x = 0;
+						pData->Rotation.z = 0;
+						pData->Rotation.x = 0;
 						v8 = *(&v5->Rotation1P + v6);
-						v4->Rotation.y = v8;
-						*((int*)*(&off_1DE95E0 + v1) + 7) = v8;
-						v4->Position = (&v5->Position1P)[v6];
-						v10 = v4->Position.y - 10.0f;
-						MainCharObj2[v1]->SurfaceInfo.BottomSurfaceDist = v10;
-						MainCharObj2[v1]->SomeVectors[0].x = 0;
+						pData->Rotation.y = v8;
+						*((int*)*(&off_1DE95E0 + pNum) + 7) = v8;
+						pData->Position = (&v5->Position1P)[v6];
+						posDif = pData->Position.y - 10.0f;
+						MainCharObj2[pNum]->SurfaceInfo.BottomSurfaceDist = posDif;
+						MainCharObj2[pNum]->SomeVectors[0].x = 0;
 						goto LABEL_27;
 					}
 					++v5;
 				}
 			}
 		}
-		v4->Rotation.z = 0;
-		v4->Rotation.y = 0;
-		v4->Rotation.x = 0;
-		v4->Position.z = 0.0;
-		v4->Position.y = 0.0;
-		v4->Position.x = 0.0;
-		*((int*)*(&off_1DE95E0 + v1) + 7) = 0;
+
+		pData->Rotation = { 0, 0, 0 };
+		pData->Position = { 0.0f, 0.0f, 0.0f };
+		*((int*)*(&off_1DE95E0 + pNum) + 7) = 0;
 	LABEL_27:
-		sub_46DC70(v1, &v4->Position, 0);
-		v4->Collision->CollisionArray->push |= 0x70u;
-		MainCharObj2[v1]->CurrentSurfaceFlags = (SurfaceFlags)0x0;
+		sub_46DC70(pNum, &pData->Position, 0);
+		pData->Collision->CollisionArray->push |= 0x70u;
+		MainCharObj2[pNum]->CurrentSurfaceFlags = (SurfaceFlags)0x0;
+
 		if ((short)CurrentLevel == LevelIDs_RadicalHighway || (short)CurrentLevel == LevelIDs_LostColony)
-			byte_1DE4664[v1 & 1] = 5;
+			byte_1DE4664[pNum & 1] = 5;
 		else
-			byte_1DE4664[v1 & 1] = *(char*)0x1DE4660;
+			byte_1DE4664[pNum & 1] = *(char*)0x1DE4660;
 	}
 }
 
@@ -987,14 +985,14 @@ LevelEndPosition* Rouge2PIntroList[] = { Rouge2PIntro, Knuckles2PIntro, Shadow2P
 
 void __cdecl Load2PIntroPos_ri(int playerNum)
 {
-	LevelEndPosition** list;
-	LevelEndPosition* v5; // eax@4
-	bool v6; // edx@11
-	NJS_VECTOR* v8; // ecx@15
-	int v10; // edi@16
-	char v11; // al@16
-	NJS_VECTOR* v12; // eax@20
-	float v13; // ST10_4@20
+	LevelEndPosition** list = 0;
+	LevelEndPosition* v5 = 0;
+	bool v6 = false;
+	NJS_VECTOR* v8 = { 0 };
+	int v10 = 0;
+	char v11 = 0;
+	NJS_VECTOR* v12 = nullptr;
+	float v13 = 0.0f;
 
 	auto pNum = playerNum;
 	auto p = MainCharacter[playerNum];
