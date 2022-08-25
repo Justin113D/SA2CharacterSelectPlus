@@ -175,4 +175,12 @@ static inline void sub_459010(MLTSoundList* a1, CharacterVoiceBank* a2)
 		call sub_459010Ptr
 	}
 }
+
+DataPointer(BossTitleData, KnucklesBossTitle, 0xDCF434);
+DataPointer(BossTitleData, RougeBossTitle, 0xDCF530);
+DataPointer(BossTitleData, TailsBossTitle, 0xEF3084);
+DataPointer(BossTitleData, EggmanBossTitle, 0xEF3190);
+DataPointer(BossTitleData, SonicBossTitle, 0x1646524);
+DataPointer(BossTitleData, ShadowBossTitle, 0x1647C24);
+
 #pragma endregion

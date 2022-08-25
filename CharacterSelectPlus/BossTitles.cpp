@@ -1,12 +1,5 @@
 #include "stdafx.h"
 
-DataPointer(BossTitleData, KnucklesBossTitle, 0xDCF434);
-DataPointer(BossTitleData, RougeBossTitle, 0xDCF530);
-DataPointer(BossTitleData, TailsBossTitle, 0xEF3084);
-DataPointer(BossTitleData, EggmanBossTitle, 0xEF3190);
-DataPointer(BossTitleData, SonicBossTitle, 0x1646524);
-DataPointer(BossTitleData, ShadowBossTitle, 0x1647C24);
-
 enum BossTitleLetterIDs
 {
 	space,
@@ -255,65 +248,65 @@ __declspec(naked) void LoadEggman2BossTitle()
 	}
 }
 
-FunctionPointer(void, ReleaseTextureList, (NJS_TEXLIST *a1), 0x77F9F0);
+
 void FreeSonicBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(SonicBossTitle.TexList);
+	FreeTexList(SonicBossTitle.TexList);
 }
 
 void FreeShadowBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(ShadowBossTitle.TexList);
+	FreeTexList(ShadowBossTitle.TexList);
 }
 
 void FreeTailsBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(TailsBossTitle.TexList);
+	FreeTexList(TailsBossTitle.TexList);
 }
 
 void FreeEggmanBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(EggmanBossTitle.TexList);
+	FreeTexList(EggmanBossTitle.TexList);
 }
 
 void FreeKnucklesBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(KnucklesBossTitle.TexList);
+	FreeTexList(KnucklesBossTitle.TexList);
 }
 
 void FreeRougeBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(RougeBossTitle.TexList);
+	FreeTexList(RougeBossTitle.TexList);
 }
 
 void FreeAmyBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(AmyBossTitle.TexList);
+	FreeTexList(AmyBossTitle.TexList);
 }
 
 void FreeMetalSonicBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(MetalSonicBossTitle.TexList);
+	FreeTexList(MetalSonicBossTitle.TexList);
 }
 
 void FreeTikalBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(TikalBossTitle.TexList);
+	FreeTexList(TikalBossTitle.TexList);
 }
 
 void FreeChaosBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(ChaosBossTitle.TexList);
+	FreeTexList(ChaosBossTitle.TexList);
 }
 
 void FreeChaoBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(ChaoBossTitle.TexList);
+	FreeTexList(ChaoBossTitle.TexList);
 }
 
 void FreeDarkChaoBossTitleTex(ObjectMaster* obj)
 {
-	ReleaseTextureList(DarkChaoBossTitle.TexList);
+	FreeTexList(DarkChaoBossTitle.TexList);
 }
 
 void LoadBossTitleTex(ObjectMaster *obj, char id)
