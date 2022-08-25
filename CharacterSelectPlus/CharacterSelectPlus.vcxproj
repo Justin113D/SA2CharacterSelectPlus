@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="Base.h" />
     <ClInclude Include="BossTitles.h" />
+    <ClInclude Include="mod.h" />
     <ClInclude Include="RankVoices.h" />
     <ClInclude Include="sa2-util.h" />
     <ClInclude Include="stdafx.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="Base.cpp" />
     <ClCompile Include="BossTitles.cpp" />
     <ClCompile Include="CharacterSelectPlus.cpp" />
+    <ClCompile Include="config.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="RankVoices.cpp" />
     <ClCompile Include="stdafx.cpp">

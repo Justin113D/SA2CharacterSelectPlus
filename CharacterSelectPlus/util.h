@@ -2,3 +2,4 @@
 
 bool isTestSpawn();
 bool isSonicTrickMod();
+
