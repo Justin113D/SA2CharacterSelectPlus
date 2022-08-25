@@ -24,7 +24,7 @@ static void* LoadStageSetFile_r(char* filename, int size)
 	std::string setS = "\\set\\set00";
 	std::string setU = setS;
 
-	if (CurrentCharacter == Characters_Knuckles || CurrentCharacter == Characters_Rouge || MissionNum >= 4)
+	if (CurrentCharacter == Characters_Knuckles || CurrentCharacter == Characters_Rouge || MissionNum == 2 || MissionNum >= 4)
 	{
 		return LoadStageSETFile_origin(filename, size);
 	}

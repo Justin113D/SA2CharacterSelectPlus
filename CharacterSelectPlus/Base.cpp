@@ -2074,6 +2074,64 @@ static void __declspec(naked) LoadCharacterSoundBanksASM()
 	}
 }
 
+int CanGrabPiece_r(int pieceID, int pnum)
+{
+	if (CurrentCharacter != Characters_Knuckles && CurrentCharacter != Characters_Rouge)
+		return 1;
+
+	auto player = MainCharObj1[pnum];
+	auto co2 = MainCharObj2[pnum];
+	char action = player->Action;
+	int result = 0;
+
+	if (pieceID < 4)
+	{
+		return 1;
+	}
+	if (pieceID > 6)
+	{
+		return 1;
+	}
+
+	if (!player)
+	{
+		return 1;
+	}
+
+	if (action == Action_DigFinish || action == Action_DigFinishOnWall)
+	{
+		return 1;
+	}
+	switch (CurrentLevel)
+	{
+	case LevelIDs_SecurityHall:
+	case LevelIDs_WildCanyon:
+	case LevelIDs_DryLagoon:
+	case LevelIDs_WildCanyon2P:
+	case LevelIDs_DryLagoon2P:
+		return 1;
+	default:
+		result = 0;
+		break;
+	}
+	return result;
+}
+
+
+static void __declspec(naked) CanGrabPieceASM()
+{
+	__asm
+	{
+		push[esp + 04h]
+		push eax 
+		call CanGrabPiece_r
+		add esp, 4 
+		add esp, 4 
+		retn
+	}
+}
+
+
 void WritePatches()
 {
 	//fix Tails and Eggman mechless wrong sound bank
@@ -2121,7 +2179,7 @@ void WriteJumps()
 	WriteJump((void*)Load2PIntroPos, Load2PIntroPos_r); // 2P Intro position
 	WriteJump((void*)0x727E5B, loc_727E5B); // 2P Race Bar
 
-	WriteJump((void*)0x6cff40, (void*)0x6cff83); //make all knux pieces always grabbable
+	WriteJump((void*)0x6cff40, CanGrabPieceASM); //make all knux pieces always grabbable
 
 	WriteJump((void*)0x43C9D0, (void*)0x43CADF); // Tails/Eggman fix
 	WriteJump((void*)0x472A7D, loc_472A7D); // Title Card textures
