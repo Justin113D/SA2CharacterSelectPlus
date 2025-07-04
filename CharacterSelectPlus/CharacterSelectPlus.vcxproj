@@ -93,6 +93,7 @@
   <ItemGroup>
     <ClInclude Include="Base.h" />
     <ClInclude Include="BossTitles.h" />
+    <ClInclude Include="FastFunctionHook.hpp" />
     <ClInclude Include="mod.h" />
     <ClInclude Include="RankVoices.h" />
     <ClInclude Include="sa2-util.h" />

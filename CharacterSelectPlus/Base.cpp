@@ -11,7 +11,7 @@ using std::string;
 using std::unordered_map;
 using std::transform;
 
-static Trampoline* GoalRing_t = nullptr;
+
 
 #pragma region Cutscene stuff
 
@@ -1171,7 +1171,7 @@ __declspec(naked) void loc_727E5B()
 
 #pragma endregion
 #pragma region Goal Ring
-
+FastFunctionHook<void, ObjectMaster*> GoalRing_Main_h(GoalRing_Main);
 void GoalRing_Main_r(ObjectMaster* obj)
 {
 	EntityData1* data = obj->Data1.Entity;
@@ -1196,8 +1196,7 @@ void GoalRing_Main_r(ObjectMaster* obj)
 		}
 	}
 
-	ObjectFunc(origin, GoalRing_t->Target());
-	origin(obj);
+	GoalRing_Main_h.Original(obj);
 }
 
 #pragma endregion
@@ -1741,22 +1740,7 @@ void LoadEmeraldManager_r_wrapper()
 
 #pragma endregion
 
-Trampoline* Knuckles_LevelBounds_t = nullptr;
-
-static inline int Knuckles_LevelBounds_origin(EntityData1* a1, KnucklesCharObj2* a2)
-{
-	auto target = Knuckles_LevelBounds_t->Target();
-
-	int result;
-	__asm
-	{
-		mov ecx, [a2]
-		mov eax, [a1]
-		call target
-		mov result, eax
-	}
-	return result;
-}
+FastUsercallHook<int, EntityData1*, KnucklesCharObj2*> Knuckles_LevelBound_h(0x737B50);
 
 int Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
 {
@@ -1764,27 +1748,14 @@ int Knuckles_LevelBounds_r(EntityData1* a1, KnucklesCharObj2* a2)
 	{
 		if ((CurrentLevel == StageSelectLevels[i].Level))
 		{
-			if (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge) {
-
-				return Knuckles_LevelBounds_origin(a1, a2);
+			if (StageSelectLevels[i].Character == Characters_Knuckles || StageSelectLevels[i].Character == Characters_Rouge) 
+			{
+				return Knuckles_LevelBound_h.Original(a1, a2);
 			}
 		}
 	}
 
 	return 0;
-}
-
-static void __declspec(naked) Knuckles_LevelBounds_ASM()
-{
-	__asm
-	{
-		push ecx
-		push eax
-		call Knuckles_LevelBounds_r
-		add esp, 4
-		pop ecx
-		retn
-	}
 }
 
 
@@ -1852,13 +1823,7 @@ void LoadEggGolemECharAnims_r()
 
 #pragma endregion
 #pragma region Animation Lists
-AnimationInfo TailsAnimList2[ChaosAnimList_Length];
-AnimationInfo MechEggmanAnimList2[ChaosAnimList_Length];
-AnimationInfo MechTailsAnimList2[ChaosAnimList_Length];
-AnimationInfo ChaoWalkerAnimList2[ChaosAnimList_Length];
-AnimationInfo DarkChaoWalkerAnimList2[ChaosAnimList_Length];
-AnimationInfo EggmanAnimList2[ChaosAnimList_Length];
-AnimationInfo SonicAnimList2[ChaosAnimList_Length];
+
 
 pair<short, short> SonicAnimReplacements[] = {
 	{ 211, 1 },
@@ -1922,61 +1887,6 @@ pair<short, short> MechAnimReplacements[] = {
 
 pair<int, int> listend = { -1, 0 };
 
-void LoadAnimations(int* character, int playerNum)
-{
-	int repcnt;
-	pair<short, short>* replst;
-	switch (*character)
-	{
-	case Characters_Sonic:
-	default:
-
-		LoadSonic(playerNum);
-		repcnt = (int)LengthOfArray(SonicAnimReplacements);
-		replst = SonicAnimReplacements;
-		break;
-	case Characters_Shadow:
-		LoadShadow(playerNum);
-		repcnt = (int)LengthOfArray(SonicAnimReplacements);
-		replst = SonicAnimReplacements;
-		break;
-	case Characters_Tails:
-		LoadTails(playerNum);
-		repcnt = (int)LengthOfArray(OthersAnimReplacements);
-		replst = OthersAnimReplacements;
-		break;
-	case Characters_Eggman:
-		LoadEggman(playerNum);
-		repcnt = (int)LengthOfArray(OthersAnimReplacements);
-		replst = OthersAnimReplacements;
-		break;
-	case Characters_Knuckles:
-		LoadKnuckles(playerNum);
-		repcnt = (int)LengthOfArray(KnucklesAnimReplacements);
-		replst = KnucklesAnimReplacements;
-		break;
-	case Characters_Rouge:
-		LoadRouge(playerNum);
-		repcnt = (int)LengthOfArray(KnucklesAnimReplacements) - 3;
-		replst = KnucklesAnimReplacements;
-		break;
-	case Characters_MechTails:
-		LoadMechTails(playerNum);
-		repcnt = (int)LengthOfArray(MechAnimReplacements);
-		replst = MechAnimReplacements;
-		break;
-	case Characters_MechEggman:
-		LoadMechEggman(playerNum);
-		repcnt = (int)LengthOfArray(MechAnimReplacements);
-		replst = MechAnimReplacements;
-		break;
-	}
-	InitPlayer(playerNum);
-	/**AnimationInfo* anilst = MainCharObj2[playerNum]->AnimInfo.Animations;
-	for (int i = 0; i < repcnt; i++)
-		if (!CharacterAnimations[anilst[replst[i].key].AnimNum].Animation)
-			anilst[replst[i].key] = anilst[replst[i].value];*/
-}
 
 template <size_t N>
 void actionlistthing(pair<int, int>* (&order)[N], void** ptr, bool skipmagichands)
@@ -2269,8 +2179,8 @@ void InitBase()
 	}
 
 
-	Knuckles_LevelBounds_t = new Trampoline((int)0x737B50, (int)0x737B5A, Knuckles_LevelBounds_ASM);
-	GoalRing_t = new Trampoline((int)GoalRing_Main, (int)GoalRing_Main + 0x6, GoalRing_Main_r);
+	Knuckles_LevelBound_h.Hook(Knuckles_LevelBounds_r, rEAX, rEAX, rECX);
+	GoalRing_Main_h.Hook(GoalRing_Main_r);
 
 	WriteCall((void*)0x4D45F0, LoadAquaticMineCharAnims_r);
 	WriteCall((void*)0x63D727, LoadDryLagoonCharAnims_r);
